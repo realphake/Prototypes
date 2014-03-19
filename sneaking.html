@@ -8,21 +8,27 @@ var context = canvas.getContext("2d");
 canvas.width = 640;
 canvas.height = 480;
 document.body.appendChild(canvas);
-
 var keysDown = {};
 addEventListener("keydown", function (e) { keysDown[e.keyCode] = true; }, false);
 addEventListener("keyup", function (e) { delete keysDown[e.keyCode]; }, false);
 
 var player = {x:100,y:100,speed:4};
+var enemies = [{x:200,y:200,xSpeed:2,ySpeed:-2}];
 function update () { 
 	if (38 in keysDown) player.y -= player.speed;
 	if (40 in keysDown) player.y += player.speed;
 	if (37 in keysDown) player.x -= player.speed;
 	if (39 in keysDown) player.x += player.speed;
+	for ( i = 0; i < enemies.length; i++ ) {
+		enemies[i].x += enemies[i].xSpeed; enemies[i].y += enemies[i].ySpeed;
+	}
 }
 function render () { 
 	clear(); 
-	drawBox(player.x-10, player.y-10, 20,20, "blue"); 
+	drawBox(player.x-10, player.y-10, 20,20, "blue");
+	for ( i = 0; i < enemies.length; i++ ) {
+		drawBox(enemies[i].x-10, enemies[i].y-10, 20,20, "orange");
+	}
 }
 
 function clear () { canvas.width = canvas.width; };
