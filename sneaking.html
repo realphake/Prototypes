@@ -23,12 +23,11 @@ var keysDown = {};
 addEventListener("keydown", function (e) { keysDown[e.keyCode] = true; }, false);
 addEventListener("keyup", function (e) { delete keysDown[e.keyCode]; }, false);
 
-var player = {x:200,y:200,gotoX:200,gotoY:200};
-var enemies = [{x:100,y:100,gotoX:100,gotoY:200},{x:400,y:300,gotoX:400,gotoY:350}];
-var walls = [{x1:20,y1:20,x2:20,y2:400},{x1:20,y1:20,x2:600,y2:20},
-		{x1:600,y1:20,x2:600,y2:400},{x1:20,y1:400,x2:600,y2:400},
-		{x1:250,y1:100,x2:225,y2:300},{x1:500,y1:300,x2:225,y2:290},
-		{x1:270,y1:120,x2:240,y2:340},{x1:530,y1:330,x2:245,y2:300}];
+var player = {x:630,y:470,gotoX:630,gotoY:470};
+var enemies = [{x:15,y:10,gotoX:15,gotoY:10},{x:10,y:15,gotoX:10,gotoY:15}];
+var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
+		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
+for (var x = 0; x < 30; x++) placeBox();
 function update () { 
 	if (38 in keysDown) player.gotoY = player.y - 4;
 	if (40 in keysDown) player.gotoY = player.y + 4;
@@ -37,8 +36,11 @@ function update () {
 	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY)) {player.x = player.gotoX; player.y = player.gotoY;}
 	player.gotoX = player.x;player.gotoY = player.y;
 	for ( var i = 0; i < enemies.length; i++ ) {
-		var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
 		var enemySpeed = 2;
+		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y)) {
+			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 6;
+		}
+		var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
 		if ( journeyLength > enemySpeed ) {
 			// go partway to the destination
 			var partOfLine = enemySpeed/journeyLength;
@@ -63,7 +65,7 @@ function update () {
 function render () { 
 	clear(); 
 	for ( var i = 0; i < walls.length; i++ ) {
-		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2)
+		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2);
 	}
 	drawBox(player.x-10, player.y-10, 20,20, "blue");
 	for ( var i = 0; i < enemies.length; i++ ) {
@@ -73,13 +75,22 @@ function render () {
 	}
 }
 
+function placeBox () {
+	rot = randomBetween(0, Math.PI/2);
+	scale = randomBetween(20,50);
+	var right = {x:Math.cos(rot),y:Math.sin(rot)}; var top = {x:Math.cos(rot+Math.PI*1.5),y:Math.sin(rot+Math.PI*1.5)}; 
+	var bottom = {x:Math.cos(rot+Math.PI/2),y:Math.sin(rot+Math.PI/2)}; var left = {x:Math.cos(rot+Math.PI),y:Math.sin(rot+Math.PI)};
+	var center = {x:randomBetween(0,640),y:randomBetween(0,480)};
+	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:right.x*scale+center.x,y2:right.y*scale+center.y});
+	walls.push({x1:right.x*scale+center.x,y1:right.y*scale+center.y,x2:top.x*scale+center.x,y2:top.y*scale+center.y});
+	walls.push({x1:top.x*scale+center.x,y1:top.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
+	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
+}
+
 function colorForLineOfSight(enemy) {
 	var color = "black";
-	if (noWallCollisions(enemy.x,enemy.y,player.x,player.y)) {
-		color = "red";
-	} else {
-		color = "orange";
-	}
+	if (noWallCollisions(enemy.x,enemy.y,player.x,player.y)) color = "red";
+	else color = "orange";
 	return color;
 }
 
