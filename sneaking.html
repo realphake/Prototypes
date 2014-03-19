@@ -2,6 +2,17 @@
 <html lang="en"><body>
 
 <script>
+var m_w = 123456789; var m_z = 987654321; var mask = 0xffffffff;
+m_w = new Date().getTime();
+function randomDouble () {
+	m_z = (36969 * (m_z & 65535) + (m_z >> 16)) & mask;
+	m_w = (18000 * (m_w & 65535) + (m_w >> 16)) & mask;
+	var result = ((m_z << 16) + m_w) & mask;
+	result /= 4294967296;
+	return result + 0.5;
+}
+function randomBetween (start,end) { return start + randomDouble() * (end-start); }
+
 var canvas = document.createElement("canvas");
 canvas.setAttribute('style', 'border: 1px solid');
 var context = canvas.getContext("2d");
@@ -12,23 +23,46 @@ var keysDown = {};
 addEventListener("keydown", function (e) { keysDown[e.keyCode] = true; }, false);
 addEventListener("keyup", function (e) { delete keysDown[e.keyCode]; }, false);
 
-var player = {x:200,y:200,speed:4};
-var enemies = [{x:100,y:100,xSpeed:0,ySpeed:0}];
+var player = {x:200,y:200,gotoX:200,gotoY:200};
+var enemies = [{x:100,y:100,gotoX:100,gotoY:200},{x:400,y:300,gotoX:400,gotoY:350}];
 var walls = [{x1:20,y1:20,x2:20,y2:400},{x1:20,y1:20,x2:600,y2:20},
 		{x1:600,y1:20,x2:600,y2:400},{x1:20,y1:400,x2:600,y2:400},
-		{x1:250,y1:0,x2:225,y2:440}];
+		{x1:250,y1:100,x2:225,y2:300},{x1:500,y1:300,x2:225,y2:290},
+		{x1:270,y1:120,x2:240,y2:340},{x1:530,y1:330,x2:245,y2:300}];
 function update () { 
-	if (38 in keysDown) player.y -= player.speed;
-	if (40 in keysDown) player.y += player.speed;
-	if (37 in keysDown) player.x -= player.speed;
-	if (39 in keysDown) player.x += player.speed;
-	for ( i = 0; i < enemies.length; i++ ) {
-		enemies[i].x += enemies[i].xSpeed; enemies[i].y += enemies[i].ySpeed;
+	if (38 in keysDown) player.gotoY = player.y - 4;
+	if (40 in keysDown) player.gotoY = player.y + 4;
+	if (37 in keysDown) player.gotoX = player.x - 4;
+	if (39 in keysDown) player.gotoX = player.x + 4;
+	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY)) {player.x = player.gotoX; player.y = player.gotoY;}
+	player.gotoX = player.x;player.gotoY = player.y;
+	for ( var i = 0; i < enemies.length; i++ ) {
+		var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
+		var enemySpeed = 2;
+		if ( journeyLength > enemySpeed ) {
+			// go partway to the destination
+			var partOfLine = enemySpeed/journeyLength;
+			enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
+			enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
+		} else {
+			// find a new destination
+			var newX = randomBetween(0,640);
+			var newY = randomBetween(0,480);
+			while(true) {
+				// Keep trying new places until we find one we can get to.
+				if (noWallCollisions(enemies[i].x,enemies[i].y,newX,newY)) break;
+				else {
+					var newX = randomBetween(0,640);
+					var newY = randomBetween(0,480);
+				}
+			}
+			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
+		}
 	}
 }
 function render () { 
 	clear(); 
-	for ( i = 0; i < walls.length; i++ ) {
+	for ( var i = 0; i < walls.length; i++ ) {
 		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2)
 	}
 	drawBox(player.x-10, player.y-10, 20,20, "blue");
@@ -68,10 +102,15 @@ function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, l
     numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
     a = numerator1 / denominator;
     b = numerator2 / denominator;
-    if (a > 0 && a < 1) result.onLine1 = true;
-    if (b > 0 && b < 1) result.onLine2 = true;
+    if (a >= 0 && a <= 1) result.onLine1 = true;
+    if (b >= 0 && b <= 1) result.onLine2 = true;
     return result.onLine1 && result.onLine2;
-};
+}
+function lengthOfLine(x1, y1, x2, y2) {
+	var a2 = Math.pow((x1-x2),2);
+	var b2 = Math.pow((y1-y2),2);
+	return Math.sqrt(a2+b2);
+}
 function drawLine(x1,y1,x2,y2) { 
 	context.moveTo(x1,y1); context.lineTo(x2,y2); context.stroke(); 
 }
