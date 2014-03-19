@@ -12,8 +12,11 @@ var keysDown = {};
 addEventListener("keydown", function (e) { keysDown[e.keyCode] = true; }, false);
 addEventListener("keyup", function (e) { delete keysDown[e.keyCode]; }, false);
 
-var player = {x:100,y:100,speed:4};
-var enemies = [{x:200,y:200,xSpeed:2,ySpeed:-2}];
+var player = {x:200,y:200,speed:4};
+var enemies = [{x:100,y:100,xSpeed:0,ySpeed:0}];
+var walls = [{x1:20,y1:20,x2:20,y2:400},{x1:20,y1:20,x2:600,y2:20},
+		{x1:600,y1:20,x2:600,y2:400},{x1:20,y1:400,x2:600,y2:400},
+		{x1:250,y1:0,x2:225,y2:440}];
 function update () { 
 	if (38 in keysDown) player.y -= player.speed;
 	if (40 in keysDown) player.y += player.speed;
@@ -25,15 +28,53 @@ function update () {
 }
 function render () { 
 	clear(); 
-	drawBox(player.x-10, player.y-10, 20,20, "blue");
-	for ( i = 0; i < enemies.length; i++ ) {
-		drawBox(enemies[i].x-10, enemies[i].y-10, 20,20, "orange");
+	for ( i = 0; i < walls.length; i++ ) {
+		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2)
 	}
+	drawBox(player.x-10, player.y-10, 20,20, "blue");
+	for ( var i = 0; i < enemies.length; i++ ) {
+		color = colorForLineOfSight(enemies[i]);
+		drawBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
+		drawLine(enemies[i].x, enemies[i].y, player.x, player.y);
+	}
+}
+
+function colorForLineOfSight(enemy) {
+	var color = "black";
+	if (noWallCollisions(enemy.x,enemy.y,player.x,player.y)) {
+		color = "red";
+	} else {
+		color = "orange";
+	}
+	return color;
+}
+
+function noWallCollisions(x1,y1,x2,y2) {
+	for ( var j = 0; j < walls.length; j++ ) { 
+		if ( checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2) ) return false; 
+	}
+	return true;
 }
 
 function clear () { canvas.width = canvas.width; };
 function drawBox (x,y,w,h,color) { context.fillStyle = color; context.fillRect(x,y,w,h); }
-
+function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
+    var denominator, a, b, numerator1, numerator2, result = { x: null, y: null, onLine1: false, onLine2: false };
+    denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
+    if (denominator == 0) return false;
+    a = line1StartY - line2StartY;
+    b = line1StartX - line2StartX;
+    numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
+    numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
+    a = numerator1 / denominator;
+    b = numerator2 / denominator;
+    if (a > 0 && a < 1) result.onLine1 = true;
+    if (b > 0 && b < 1) result.onLine2 = true;
+    return result.onLine1 && result.onLine2;
+};
+function drawLine(x1,y1,x2,y2) { 
+	context.moveTo(x1,y1); context.lineTo(x2,y2); context.stroke(); 
+}
 setInterval(function () { update(); render(); }, 20);
 </script>
 
