@@ -1,25 +1,14 @@
 <!DOCTYPE html>
 <html lang="en"><body>
 
+<script src="genericFunctions.js"></script>
 <script>
-var canvas = document.createElement("canvas");
-canvas.setAttribute('style', 'border: 1px solid');
-var context = canvas.getContext("2d");
-canvas.width = 640;
-canvas.height = 480;
-document.body.appendChild(canvas);
-
-var keysDown = {};
-addEventListener("keydown", function (e) { keysDown[e.keyCode] = true; }, false);
-addEventListener("keyup", function (e) { delete keysDown[e.keyCode]; }, false);
 
 function update () { /* Game code goes here */ }
 function render () { /* Graphics code goes here */ }
 
-function clear () { canvas.width = canvas.width; };
-function drawBox (x,y,w,h,color) { context.fillStyle = color; context.fillRect(x,y,w,h); }
-
 setInterval(function () { update(); render(); }, 20);
+
 </script>
 
 </body></html>
