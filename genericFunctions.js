@@ -35,7 +35,13 @@ function clear () {
 
 function drawBox (x,y,w,h,color) {
 	context.fillStyle = color; context.fillRect(x,y,w,h); 
+	context.fillStyle = "black"; 
 }
+
+function drawText(text,x,y, color) {
+	context.fillStyle = color; context.fillText(text,x,y);
+	context.fillStyle = "black"; 
+};
 
 function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, 
 		line2StartX, line2StartY, line2EndX, line2EndY) {

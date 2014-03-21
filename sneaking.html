@@ -10,7 +10,7 @@ var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 for (var x = 0; x < 30; x++) placeBox();
 function update () { 
 	deltaX = 0; deltaY = 0;
-	if (38 in keysDown) deltaY -= 4;//player.gotoY = player.y - 4;
+	if (38 in keysDown) deltaY -= 4;
 	if (40 in keysDown) deltaY += 4;
 	if (37 in keysDown) deltaX -= 4;
 	if (39 in keysDown) deltaX += 4;

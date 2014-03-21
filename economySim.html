@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en"><body>
+
+<script src="genericFunctions.js"></script>
+<script>
+var gold = 1000; var wood = 0; var food = 100;
+var houses = 0; var restaurants = 0; 
+
+var taxToPay = 0.05;
+var foodMadePerRestaurant = 0.05;
+var taxGetPerHouse = 0.01; 
+var foodPerHouse = 0.01;
+
+function update () { 
+	gold -= taxToPay;
+	gold += houses * taxGetPerHouse;
+	food -= houses * foodPerHouse;
+	food += restaurants * foodMadePerRestaurant;
+}
+function render () { 
+	clear();
+	drawText("Gold: "+Math.round(gold),20,20, "black");
+	drawText("Wood: "+Math.round(wood),20,40, "black");
+	drawText("Food: "+Math.round(food),20,60, "black");
+	
+	drawText("Houses: "+houses,100,20, "black");
+	drawText("Restaurants: "+restaurants,100,40, "black");
+}
+
+setInterval(function () { update(); render(); }, 20);
+
+</script>
+
+</body></html>
