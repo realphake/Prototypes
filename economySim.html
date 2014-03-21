@@ -3,19 +3,61 @@
 
 <script src="genericFunctions.js"></script>
 <script>
-var gold = 1000; var wood = 0; var food = 100;
-var houses = 0; var restaurants = 0; 
+function copy(obj) {
+	var copiedObj = {};
+	for (thing in obj) {
+		copiedObj[thing] = obj[thing];
+	}
+	return copiedObj;
+}
+
+var previousKeysDown = copy(keysDown);
+
+var gold = 1000; var wood = 15; var food = 100;
+var houses = 0; var restaurants = 0; var lumberjacks = 0;
 
 var taxToPay = 0.05;
 var foodMadePerRestaurant = 0.05;
 var taxGetPerHouse = 0.01; 
 var foodPerHouse = 0.01;
+var woodPerLumberjack = 0.01;
 
 function update () { 
 	gold -= taxToPay;
 	gold += houses * taxGetPerHouse;
 	food -= houses * foodPerHouse;
 	food += restaurants * foodMadePerRestaurant;
+	wood += lumberjacks * woodPerLumberjack;
+	if (food > 100) food = 100;
+	
+	if ( 72 in keysDown ) {
+		if ( !(72 in previousKeysDown) ) {
+			if (gold >= 20 && wood >= 5) {
+				houses += 1;
+				gold -= 20;
+				wood -= 5;
+			}
+		}
+	}
+	if ( 82 in keysDown ) {
+		if ( !(82 in previousKeysDown) ) {
+			if (gold >= 20 && wood >= 10) {
+				restaurants += 1;
+				gold -= 20;
+				wood -= 10;
+			}
+		}
+	}
+	if ( 76 in keysDown ) {
+		if ( !(76 in previousKeysDown) ) {
+			if (gold >= 20 && wood >= 5) {
+				lumberjacks += 1;
+				gold -= 20;
+				wood -= 5;
+			}
+		}
+	}
+	previousKeysDown = copy(keysDown);
 }
 function render () { 
 	clear();
@@ -25,7 +67,14 @@ function render () {
 	
 	drawText("Houses: "+houses,100,20, "black");
 	drawText("Restaurants: "+restaurants,100,40, "black");
+	drawText("Lumberjacks: "+lumberjacks,100,60, "black");
+	
+	drawText("H: build a house",200,400, "black");
+	drawText("R: build a restaurant",200,420, "black");
+	drawText("L: build a lumberjack's",200,440, "black");
 }
+
+
 
 setInterval(function () { update(); render(); }, 20);
 
