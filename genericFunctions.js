@@ -9,8 +9,13 @@ var keysDown = {};
 addEventListener("keydown", function (e) { keysDown[e.keyCode] = true; }, false);
 addEventListener("keyup", function (e) { delete keysDown[e.keyCode]; }, false);
 
-var m_w = 123456789; var m_z = 987654321; var mask = 0xffffffff;
-m_w = new Date().getTime();
+var m_w = new Date().getTime(); 
+var m_z = 987654321; 
+var mask = 0xffffffff;
+
+function seed(i) {
+    m_w = i;
+}
 
 function randomDouble () {
 	m_z = (36969 * (m_z & 65535) + (m_z >> 16)) & mask;
@@ -32,20 +37,35 @@ function drawBox (x,y,w,h,color) {
 	context.fillStyle = color; context.fillRect(x,y,w,h); 
 }
 
-function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
-    var denominator, a, b, numerator1, numerator2, result = { x: null, y: null, onLine1: false, onLine2: false };
-    denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
-    if (denominator == 0) return false;
+function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, 
+		line2StartX, line2StartY, line2EndX, line2EndY) {
+    var denominator, a, b, numerator1, numerator2, result = {
+        x: null,
+        y: null,
+        onLine1: false,
+        onLine2: false
+    };
+    denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) -
+			((line2EndX - line2StartX) * (line1EndY - line1StartY));
+    if (denominator == 0) {
+        return result;
+    }
     a = line1StartY - line2StartY;
     b = line1StartX - line2StartX;
     numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
     numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
     a = numerator1 / denominator;
     b = numerator2 / denominator;
-    if (a >= 0 && a <= 1) result.onLine1 = true;
-    if (b >= 0 && b <= 1) result.onLine2 = true;
-    return result.onLine1 && result.onLine2;
-}
+    result.x = line1StartX + (a * (line1EndX - line1StartX));
+    result.y = line1StartY + (a * (line1EndY - line1StartY));
+    if (a > 0 && a < 1) {
+        result.onLine1 = true;
+    }
+    if (b > 0 && b < 1) {
+        result.onLine2 = true;
+    }
+    return result;
+};
 
 function lengthOfLine(x1, y1, x2, y2) {
 	var a2 = Math.pow((x1-x2),2);

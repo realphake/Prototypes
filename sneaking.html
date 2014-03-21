@@ -79,7 +79,8 @@ function colorForLineOfSight(enemy) {
 
 function noWallCollisions(x1,y1,x2,y2) {
 	for ( var j = 0; j < walls.length; j++ ) { 
-		if ( checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2) ) return false; 
+		var intersection = checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2);
+		if ( intersection.onLine1 && intersection.onLine2 ) return false; 
 	}
 	return true;
 }
