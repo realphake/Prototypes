@@ -3,10 +3,14 @@
 
 <script src="genericFunctions.js"></script>
 <script>
+var careful = 0; var reckless = 0;
+var score = 0; var temporaryScore = 0;
 var player = {x:630,y:470,gotoX:630,gotoY:470};
-var enemies = [{x:15,y:10,gotoX:15,gotoY:10},{x:10,y:15,gotoX:10,gotoY:15}];
+var enemies = [{x:15,y:10,gotoX:15,gotoY:10}]//,{x:10,y:15,gotoX:10,gotoY:15}];
 var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
+var doors = [];
+var reward = {x:20,y:20,radius:10};
 for (var x = 0; x < 30; x++) placeBox();
 function update () { 
 	deltaX = 0; deltaY = 0;
@@ -16,12 +20,24 @@ function update () {
 	if (39 in keysDown) deltaX += 4;
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
 	player.gotoY = player.y + deltaY; player.gotoX = player.x + deltaX;
+	if (deltaX == 0 && deltaY == 0) careful += 0.01;
+	else reckless += 0.01;
+	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius) {
+		careful += 100;
+		reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
+	}
 	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY)) {player.x = player.gotoX; player.y = player.gotoY;}
 	player.gotoX = player.x;player.gotoY = player.y;
+	var playerNotSeen = true;
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var enemySpeed = 2;
 		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y)) {
+			playerNotSeen = false;
 			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 6;
+			if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
+				if (score == 0) score = careful+reckless; 
+				careful = 0; reckless = 0;
+			} else temporaryScore += 10;
 		}
 		var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
 		if ( journeyLength > enemySpeed ) {
@@ -44,27 +60,36 @@ function update () {
 			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 		}
 	}
+	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
 function render () { 
 	clear(); 
 	for ( var i = 0; i < walls.length; i++ ) {
-		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2);
+		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
 	}
-	drawBox(player.x-10, player.y-10, 20,20, "blue");
+	for ( var i = 0; i < doors.length; i++ ) {
+		drawLine(doors[i].x1, doors[i].y1, doors[i].x2, doors[i].y2,"lightgrey");
+	}
 	for ( var i = 0; i < enemies.length; i++ ) {
 		color = colorForLineOfSight(enemies[i]);
+		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, "lightblue");
 		drawBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
-		drawLine(enemies[i].x, enemies[i].y, player.x, player.y);
 	}
+	drawBox(player.x-10, player.y-10, 20,20, "blue");
+	drawCircle(reward.x,reward.y,reward.radius, "green");
+	if (score > 0) {
+		drawText("final score: "+Math.floor(score),320,240, "green");
+		drawText("Reload the page to try again.",320,255, "green");
+	} else drawText("Score: "+Math.floor(careful+reckless),5,15, "green");
 }
 
 function placeBox () {
-	rot = randomBetween(0, Math.PI/2);
+	rot = randomBetween(0, Math.PI*2);
 	scale = randomBetween(20,50);
 	var right = {x:Math.cos(rot),y:Math.sin(rot)}; var top = {x:Math.cos(rot+Math.PI*1.5),y:Math.sin(rot+Math.PI*1.5)}; 
 	var bottom = {x:Math.cos(rot+Math.PI/2),y:Math.sin(rot+Math.PI/2)}; var left = {x:Math.cos(rot+Math.PI),y:Math.sin(rot+Math.PI)};
 	var center = {x:randomBetween(0,640),y:randomBetween(0,480)};
-	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:right.x*scale+center.x,y2:right.y*scale+center.y});
+	doors.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:right.x*scale+center.x,y2:right.y*scale+center.y});
 	walls.push({x1:right.x*scale+center.x,y1:right.y*scale+center.y,x2:top.x*scale+center.x,y2:top.y*scale+center.y});
 	walls.push({x1:top.x*scale+center.x,y1:top.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
 	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});

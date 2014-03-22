@@ -38,10 +38,22 @@ function drawBox (x,y,w,h,color) {
 	context.fillStyle = "black"; 
 }
 
+function drawCircle(x,y,r,color) {
+	context.beginPath(); context.strokeStyle = color;
+	context.arc(x,y,r,0,2*Math.PI);
+	context.stroke(); context.strokeStyle = "black";
+}
+
 function drawText(text,x,y, color) {
 	context.fillStyle = color; context.fillText(text,x,y);
 	context.fillStyle = "black"; 
-};
+}
+
+function drawLine(x1,y1,x2,y2, color) {
+	context.beginPath(); context.strokeStyle = color;
+	context.moveTo(x1,y1); context.lineTo(x2,y2); 
+	context.stroke(); context.strokeStyle = "black";
+}
 
 function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, 
 		line2StartX, line2StartY, line2EndX, line2EndY) {
@@ -77,8 +89,4 @@ function lengthOfLine(x1, y1, x2, y2) {
 	var a2 = Math.pow((x1-x2),2);
 	var b2 = Math.pow((y1-y2),2);
 	return Math.sqrt(a2+b2);
-}
-
-function drawLine(x1,y1,x2,y2) { 
-	context.moveTo(x1,y1); context.lineTo(x2,y2); context.stroke(); 
 }
