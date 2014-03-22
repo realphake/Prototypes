@@ -63,24 +63,25 @@ function update () {
 	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
 function render () { 
-	clear(); 
-	for ( var i = 0; i < walls.length; i++ ) {
-		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
-	}
+	clear();
+	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
+	drawCircle(reward.x,reward.y,reward.radius, "green");
 	for ( var i = 0; i < doors.length; i++ ) {
 		drawLine(doors[i].x1, doors[i].y1, doors[i].x2, doors[i].y2,"lightgrey");
+	}
+	for ( var i = 0; i < walls.length; i++ ) {
+		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
 	}
 	for ( var i = 0; i < enemies.length; i++ ) {
 		color = colorForLineOfSight(enemies[i]);
 		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, "lightblue");
-		drawBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
+		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
 	}
-	drawBox(player.x-10, player.y-10, 20,20, "blue");
-	drawCircle(reward.x,reward.y,reward.radius, "green");
+	fillBox(player.x-10, player.y-10, 20,20, "blue");
 	if (score > 0) {
-		drawText("final score: "+Math.floor(score),320,240, "green");
-		drawText("Reload the page to try again.",320,255, "green");
-	} else drawText("Score: "+Math.floor(careful+reckless),5,15, "green");
+		writeText("final score: "+Math.floor(score),320,240, "green");
+		writeText("Reload the page to try again.",320,255, "green");
+	} else writeText("Score: "+Math.floor(careful+reckless),5,15, "green");
 }
 
 function placeBox () {

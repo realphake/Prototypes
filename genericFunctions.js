@@ -33,7 +33,7 @@ function clear () {
 	canvas.width = canvas.width; 
 }
 
-function drawBox (x,y,w,h,color) {
+function fillBox (x,y,w,h,color) {
 	context.fillStyle = color; context.fillRect(x,y,w,h); 
 	context.fillStyle = "black"; 
 }
@@ -44,7 +44,13 @@ function drawCircle(x,y,r,color) {
 	context.stroke(); context.strokeStyle = "black";
 }
 
-function drawText(text,x,y, color) {
+function fillCircle(x,y,r,color) {
+	context.beginPath(); context.fillStyle = color;
+	context.arc(x,y,r,0,2*Math.PI);
+	context.fill(); context.fillStyle = "black";
+}
+
+function writeText(text,x,y, color) {
 	context.fillStyle = color; context.fillText(text,x,y);
 	context.fillStyle = "black"; 
 }
