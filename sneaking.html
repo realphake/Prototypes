@@ -47,16 +47,16 @@ function update () {
 			enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
 		} else {
 			// find a new destination
-			var newX = randomBetween(0,640);
-			var newY = randomBetween(0,480);
-			while(true) {
+			var newX = enemies[i].x; //randomBetween(0,640);
+			var newY = enemies[i].y; //randomBetween(0,480);
+			//while(true) {
 				// Keep trying new places until we find one we can get to.
-				if (noWallCollisions(enemies[i].x,enemies[i].y,newX,newY)) break;
-				else {
-					var newX = randomBetween(0,640);
-					var newY = randomBetween(0,480);
-				}
-			}
+				//if (noWallCollisions(enemies[i].x,enemies[i].y,newX,newY)) break;
+				//else {
+				//	var newX = randomBetween(0,640);
+				//	var newY = randomBetween(0,480);
+				//}
+			//}
 			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 		}
 	}
