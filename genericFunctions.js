@@ -91,11 +91,9 @@ function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY,
     return result;
 };
 
-function angleBetweenLines(line1StartX, line1StartY, line1EndX, line1EndY, 
-		line2StartX, line2StartY, line2EndX, line2EndY) {
-	var angle1 = Math.atan2(line1StartY - line1EndY, line1StartX - line1EndX);
-	var angle2 = Math.atan2(line2StartY - line2EndY, line2StartX - line2EndX);
-	return angle1-angle2;
+function angleOfLine(line1StartX, line1StartY, line1EndX, line1EndY) {
+	var angle = Math.atan2(line1StartY - line1EndY, line1StartX - line1EndX);
+	return angle;
 }
 
 function lengthOfLine(x1, y1, x2, y2) {
