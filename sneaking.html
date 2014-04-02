@@ -3,6 +3,39 @@
 
 <script src="genericFunctions.js"></script>
 <script>
+
+var mouse = {
+isDown: false,
+justChanged: false,
+wentDownAt: {x: 320, y: 240},
+isNowAt: {x: 320, y: 240}
+};
+
+var handleMouseDown = function (e) {
+mouse.isDown = true;
+mouse.justChanged = true;
+mouse.wentDownAt.x = e.pageX - canvas.offsetLeft;
+mouse.wentDownAt.y = e.pageY - canvas.offsetTop;
+};
+
+var handleMouseUp = function (e) {
+mouse.isDown = false;
+mouse.justChanged = true;
+};
+
+var handleMouseMove = function (e) {
+mouse.isNowAt.x = e.pageX - canvas.offsetLeft;
+mouse.isNowAt.y = e.pageY - canvas.offsetTop;
+};
+
+var updateInput = function () {
+mouse.justChanged = false;
+};
+
+canvas.addEventListener("mousedown", handleMouseDown, false);
+canvas.addEventListener("mouseup", handleMouseUp, false);
+canvas.addEventListener("mousemove", handleMouseMove, false);
+
 var careful = 0; var reckless = 0;
 var score = 0; var temporaryScore = 0;
 var player = {x:630,y:470,gotoX:630,gotoY:470};
@@ -16,12 +49,11 @@ var reward = {x:20,y:20,radius:10};
 for (var x = 0; x < 30; x++) placeBox();
 function update () { 
 	deltaX = 0; deltaY = 0;
-	if (38 in keysDown) deltaY -= 4;
-	if (40 in keysDown) deltaY += 4;
-	if (37 in keysDown) deltaX -= 4;
-	if (39 in keysDown) deltaX += 4;
-	if (49 in keysDown) weaponAngle -= 0.03;
-	if (50 in keysDown) weaponAngle += 0.03;
+	if (87 in keysDown) deltaY -= 4;
+	if (83 in keysDown) deltaY += 4;
+	if (65 in keysDown) deltaX -= 4;
+	if (68 in keysDown) deltaX += 4;
+	weaponAngle = angleOfLine(mouse.isNowAt.x,mouse.isNowAt.y,player.x,player.y);
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
 	player.gotoY = player.y + deltaY; player.gotoX = player.x + deltaX;
 	if (deltaX == 0 && deltaY == 0) careful += 0.01;
@@ -69,7 +101,8 @@ function update () {
 	var wallAngle = angleOfLine(intersect.x1,intersect.y1,intersect.x2,intersect.y2);
 	var angleOfThatLine = wallAngle+Math.PI-(angleOfLine(player.x,player.y,intersect.x,intersect.y)-wallAngle);
 	var line = lineFrom(intersect.x,intersect.y,1000,angleOfThatLine);
-	weapon.x1 = line.x1; weapon.y1 = line.y1; weapon.x2 = line.x2; weapon.y2 = line.y2;
+	var stopPoint = ricochetPoint(line.x1,line.y1,line.x2,line.y2);
+	weapon.x1 = line.x1; weapon.y1 = line.y1; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
 	
 	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
