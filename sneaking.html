@@ -39,7 +39,7 @@ canvas.addEventListener("mousemove", handleMouseMove, false);
 var careful = 0; var reckless = 0;
 var score = 0; var temporaryScore = 0;
 var player = {x:630,y:470,gotoX:630,gotoY:470};
-var enemies = [{x:15,y:10,gotoX:15,gotoY:10}]//,{x:10,y:15,gotoX:10,gotoY:15}];
+var enemies = [{x:15,y:10,gotoX:15,gotoY:10},{x:10,y:15,gotoX:10,gotoY:15}];
 var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
 var weaponAngle = 0;
@@ -47,6 +47,16 @@ var weapon = {x1:0,y1:0,x2:0,y2:0};
 var doors = [];
 var reward = {x:20,y:20,radius:10};
 for (var x = 0; x < 30; x++) placeBox();
+var enemiesWaiting = [0,0];
+
+function shootyTimes() {
+	for ( var i = 0; i < enemies.length; i++ ) {
+		if (oneWallCollision(enemies[i].x,enemies[i].y,player.x,player.y)) {
+			enemiesWaiting[i] = 100;
+		}
+	}
+}
+
 function update () { 
 	deltaX = 0; deltaY = 0;
 	if (87 in keysDown) deltaY -= 4;
@@ -57,6 +67,7 @@ function update () {
 	if (40 in keysDown) deltaY += 4;
 	if (37 in keysDown) deltaX -= 4;
 	if (39 in keysDown) deltaX += 4;
+	if (88 in keysDown) { shootyTimes(); console.log("suspended"); }
 	weaponAngle = angleOfLine(mouse.isNowAt.x,mouse.isNowAt.y,player.x,player.y);
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
 	player.gotoY = player.y + deltaY; player.gotoX = player.x + deltaX;
@@ -81,22 +92,26 @@ function update () {
 		}
 		var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
 		if ( journeyLength > enemySpeed ) {
-			// go partway to the destination
-			var partOfLine = enemySpeed/journeyLength;
-			enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
-			enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
+			if (enemiesWaiting[i] > 0) {
+				enemiesWaiting[i] -= 1;
+			} else {
+				// go partway to the destination
+				var partOfLine = enemySpeed/journeyLength;
+				enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
+				enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
+			}
 		} else {
 			// find a new destination
-			var newX = enemies[i].x; //randomBetween(0,640);
-			var newY = enemies[i].y; //randomBetween(0,480);
-			//while(true) {
+			var newX = randomBetween(0,640);
+			var newY = randomBetween(0,480);
+			while(true) {
 				// Keep trying new places until we find one we can get to.
-				//if (noWallCollisions(enemies[i].x,enemies[i].y,newX,newY)) break;
-				//else {
-				//	var newX = randomBetween(0,640);
-				//	var newY = randomBetween(0,480);
-				//}
-			//}
+				if (noWallCollisions(enemies[i].x,enemies[i].y,newX,newY)) break;
+				else {
+					var newX = randomBetween(0,640);
+					var newY = randomBetween(0,480);
+				}
+			}
 			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 		}
 	}
@@ -203,7 +218,7 @@ function oneWallCollision(x1,y1,x2,y2) {
 		var intersection = checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2);
 		if ( intersection.onLine1 && intersection.onLine2 ) collisions += 1; 
 	}
-	if ( collisions == 1 ) return true;
+	if ( collisions <= 1 ) return true;
 	else return false;
 }
 setInterval(function () { update(); render(); }, 20);
