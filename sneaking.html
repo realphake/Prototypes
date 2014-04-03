@@ -98,11 +98,12 @@ function update () {
 	}
 	var aimingAt = lineFrom(player.x, player.y, 1000, weaponAngle);
 	var intersect = ricochetPoint(aimingAt.x1, aimingAt.y1, aimingAt.x2, aimingAt.y2);
-	var wallAngle = angleOfLine(intersect.x1,intersect.y1,intersect.x2,intersect.y2);
-	var angleOfThatLine = wallAngle+Math.PI-(angleOfLine(player.x,player.y,intersect.x,intersect.y)-wallAngle);
-	var line = lineFrom(intersect.x,intersect.y,1000,angleOfThatLine);
-	var stopPoint = ricochetPoint(line.x1,line.y1,line.x2,line.y2);
-	weapon.x1 = line.x1; weapon.y1 = line.y1; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
+	//var wallAngle = angleOfLine(intersect.x1,intersect.y1,intersect.x2,intersect.y2);
+	//var angleOfThatLine = wallAngle+Math.PI-(angleOfLine(player.x,player.y,intersect.x,intersect.y)-wallAngle);
+	//var line = lineFrom(intersect.x,intersect.y,1000,angleOfThatLine);
+	//var stopPoint = ricochetPoint(line.x1,line.y1,line.x2,line.y2);
+	var stopPoint = ricochetPoint(intersect.x,intersect.y,aimingAt.x2,aimingAt.y2);
+	weapon.x1 = intersect.x; weapon.y1 = intersect.y; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
 	
 	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
