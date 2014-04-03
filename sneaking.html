@@ -53,6 +53,10 @@ function update () {
 	if (83 in keysDown) deltaY += 4;
 	if (65 in keysDown) deltaX -= 4;
 	if (68 in keysDown) deltaX += 4;
+	if (38 in keysDown) deltaY -= 4;
+	if (40 in keysDown) deltaY += 4;
+	if (37 in keysDown) deltaX -= 4;
+	if (39 in keysDown) deltaX += 4;
 	weaponAngle = angleOfLine(mouse.isNowAt.x,mouse.isNowAt.y,player.x,player.y);
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
 	player.gotoY = player.y + deltaY; player.gotoX = player.x + deltaX;
@@ -103,7 +107,7 @@ function update () {
 	//var line = lineFrom(intersect.x,intersect.y,1000,angleOfThatLine);
 	//var stopPoint = ricochetPoint(line.x1,line.y1,line.x2,line.y2);
 	var stopPoint = ricochetPoint(intersect.x,intersect.y,aimingAt.x2,aimingAt.y2);
-	weapon.x1 = intersect.x; weapon.y1 = intersect.y; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
+	weapon.x1 = player.x; weapon.y1 = player.y; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
 	
 	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
@@ -119,18 +123,27 @@ function render () {
 	}
 	fillBox(player.x-10, player.y-10, 20,20, "blue");
 	for ( var i = 0; i < enemies.length; i++ ) {
-		color = colorForLineOfSight(enemies[i]);
-		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, "lightblue");
+		var color = colorForLineOfSight(enemies[i]);
+		var color2 = "lightblue";
+		var color2 = colorForWeapon(enemies[i]);
+		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, color2);
 		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
 		
-		drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
-		drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
+		//drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
+		//drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
 	}
 	if (score > 0) {
 		writeText("final score: "+Math.floor(score),320,240, "green");
 		writeText("Reload the page to try again.",320,255, "green");
 	} else writeText("Score: "+Math.floor(careful+reckless),5,15, "green");
 	
+}
+
+function colorForWeapon(enemy) {
+	var color = "black";
+	if (oneWallCollision(enemy.x,enemy.y,player.x,player.y)) color = "red";
+	else color = "lightblue";
+	return color;
 }
 
 function lineFrom(startX,startY,length,angle) {
@@ -183,6 +196,15 @@ function noWallCollisions(x1,y1,x2,y2) {
 		if ( intersection.onLine1 && intersection.onLine2 ) return false; 
 	}
 	return true;
+}
+function oneWallCollision(x1,y1,x2,y2) {
+	var collisions = 0;
+	for ( var j = 0; j < walls.length; j++ ) { 
+		var intersection = checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2);
+		if ( intersection.onLine1 && intersection.onLine2 ) collisions += 1; 
+	}
+	if ( collisions == 1 ) return true;
+	else return false;
 }
 setInterval(function () { update(); render(); }, 20);
 </script>
