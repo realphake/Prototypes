@@ -67,18 +67,20 @@ function update () {
 	if (40 in keysDown) deltaY += 4;
 	if (37 in keysDown) deltaX -= 4;
 	if (39 in keysDown) deltaX += 4;
-	if (88 in keysDown) { shootyTimes(); console.log("suspended"); }
+	if (88 in keysDown) { }//shootyTimes(); }
 	weaponAngle = angleOfLine(mouse.isNowAt.x,mouse.isNowAt.y,player.x,player.y);
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
-	player.gotoY = player.y + deltaY; player.gotoX = player.x + deltaX;
+	player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
 	if (deltaX == 0 && deltaY == 0) careful += 0.01;
 	else reckless += 0.01;
 	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius) {
 		careful += 100;
 		reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
 	}
-	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY)) {player.x = player.gotoX; player.y = player.gotoY;}
-	player.gotoX = player.x;player.gotoY = player.y;
+	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY) && ! (88 in keysDown) ) {
+		player.x = player.gotoX; player.y = player.gotoY;
+	}
+	//player.gotoX = player.x;player.gotoY = player.y;
 	var playerNotSeen = true;
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var enemySpeed = 2;
@@ -136,7 +138,12 @@ function render () {
 	for ( var i = 0; i < walls.length; i++ ) {
 		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
 	}
+	var color = "black";
+	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY)) color = "lightblue";
+	else color = "red";
+	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
 	fillBox(player.x-10, player.y-10, 20,20, "blue");
+	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var color = colorForLineOfSight(enemies[i]);
 		var color2 = "lightblue";
