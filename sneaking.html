@@ -82,6 +82,7 @@ function update () {
 	}
 	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y; }
 	var playerNotSeen = true;
+	if (! (88 in keysDown))
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var enemySpeed = 1;
 		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 250) {
