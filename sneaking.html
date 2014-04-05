@@ -83,10 +83,10 @@ function update () {
 	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y; }
 	var playerNotSeen = true;
 	for ( var i = 0; i < enemies.length; i++ ) {
-		var enemySpeed = 2;
-		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y)) {
+		var enemySpeed = 1;
+		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 250) {
 			playerNotSeen = false;
-			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 6;
+			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
 			if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
 				if (score == 0) score = careful+reckless; 
 				careful = 0; reckless = 0;
@@ -130,8 +130,11 @@ function update () {
 }
 function render () { 
 	clear();
-	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
-	drawCircle(reward.x,reward.y,reward.radius, "green");
+	for ( var i = 0; i < enemies.length; i++ ) {
+		for ( var j = 0; j < walls.length; j++ ) {
+			drawShadow(enemies[i].x, enemies[i].y, walls[j].x1, walls[j].y1, walls[j].x2, walls[j].y2);
+		}
+	}
 	for ( var i = 0; i < doors.length; i++ ) {
 		drawLine(doors[i].x1, doors[i].y1, doors[i].x2, doors[i].y2,"lightgrey");
 	}
@@ -141,15 +144,18 @@ function render () {
 	var color = "black";
 	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY)) color = "lightblue";
 	else color = "red";
+	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
+	drawCircle(reward.x,reward.y,reward.radius, "green");
 	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
 	fillBox(player.x-10, player.y-10, 20,20, "blue");
 	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var color = colorForLineOfSight(enemies[i]);
 		var color2 = "lightblue";
-		var color2 = colorForWeapon(enemies[i]);
+		//var color2 = colorForWeapon(enemies[i]);
 		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, color2);
 		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
+		drawCircle(enemies[i].x,enemies[i].y,250,"grey");
 		
 		//drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
 		//drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
@@ -166,6 +172,20 @@ function colorForWeapon(enemy) {
 	if (oneWallCollision(enemy.x,enemy.y,player.x,player.y)) color = "red";
 	else color = "lightblue";
 	return color;
+}
+
+function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
+	var angle1 = angleOfLine( wallX1,wallY1,lightX,lightY);
+	var angle2 = angleOfLine( wallX2,wallY2,lightX,lightY);
+	var line1 = lineFrom(wallX1,wallY1,1000,angle1);
+	var line2 = lineFrom(wallX2,wallY2,1000,angle2);
+	context.beginPath(); context.strokeStyle = "lightgrey"; context.fillStyle = "lightgrey";
+	context.moveTo(wallX1,wallY1);
+	context.lineTo(line1.x2,line1.y2);
+	context.lineTo(line2.x2,line2.y2);
+	context.lineTo(wallX2,wallY2);
+	context.lineTo(wallX1,wallY1);
+	context.fill(); context.fillStyle = "black"; context.strokeStyle = "black";
 }
 
 function lineFrom(startX,startY,length,angle) {
