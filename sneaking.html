@@ -39,7 +39,7 @@ canvas.addEventListener("mousemove", handleMouseMove, false);
 var careful = 0; var reckless = 0;
 var score = 0; var temporaryScore = 0;
 var player = {x:630,y:470,gotoX:630,gotoY:470};
-var enemies = [{x:15,y:10,gotoX:15,gotoY:10},{x:10,y:15,gotoX:10,gotoY:15}];
+var enemies = [{x:15,y:10,gotoX:15,gotoY:10}];//,{x:10,y:15,gotoX:10,gotoY:15}];
 var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
 var weaponAngle = 0;
@@ -80,7 +80,7 @@ function update () {
 	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY) && ! (88 in keysDown) ) {
 		player.x = player.gotoX; player.y = player.gotoY;
 	}
-	//player.gotoX = player.x;player.gotoY = player.y;
+	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y; }
 	var playerNotSeen = true;
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var enemySpeed = 2;
