@@ -193,14 +193,6 @@ function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	context.fill(); context.fillStyle = "black"; context.strokeStyle = "black";
 }
 
-function lineFrom(startX,startY,length,angle) {
-	var output = {};
-	output.x2 = Math.cos(angle) * length; output.y2 = Math.sin(angle) * length;
-	output.x2 += startX; output.y2 += startY;
-	output.x1 = startX; output.y1 = startY;
-	return output;
-}
-
 function placeBox () {
 	rot = randomBetween(0, Math.PI*2);
 	scale = randomBetween(20,50);

@@ -96,6 +96,14 @@ function angleOfLine(line1StartX, line1StartY, line1EndX, line1EndY) {
 	return angle;
 }
 
+function lineFrom(startX,startY,length,angle) {
+	var output = {};
+	output.x2 = Math.cos(angle) * length; output.y2 = Math.sin(angle) * length;
+	output.x2 += startX; output.y2 += startY;
+	output.x1 = startX; output.y1 = startY;
+	return output;
+}
+
 function lengthOfLine(x1, y1, x2, y2) {
 	var a2 = Math.pow((x1-x2),2);
 	var b2 = Math.pow((y1-y2),2);
