@@ -45,7 +45,7 @@ var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 var weaponAngle = 0;
 var weapon = {x1:0,y1:0,x2:0,y2:0};
 var doors = [];
-var reward = {x:20,y:20,radius:10};
+var reward = {x:20,y:20,radius:10,taken:30};
 for (var x = 0; x < 30; x++) placeBox();
 var enemiesWaiting = [0,0];
 
@@ -73,9 +73,13 @@ function update () {
 	player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
 	if (deltaX == 0 && deltaY == 0) careful += 0.01;
 	else reckless += 0.01;
-	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius) {
-		careful += 100;
-		reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
+	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius ) {
+		if (reward.taken < 0) {
+			careful += 100; reward.taken = 30;
+			reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
+		} else {
+			reward.taken -= 1;
+		}
 	}
 	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY) && ! (88 in keysDown) ) {
 		player.x = player.gotoX; player.y = player.gotoY;
@@ -85,7 +89,7 @@ function update () {
 	if (! (88 in keysDown))
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var enemySpeed = 1;
-		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 250) {
+		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 400) {
 			playerNotSeen = false;
 			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
 			if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
@@ -156,7 +160,7 @@ function render () {
 		//var color2 = colorForWeapon(enemies[i]);
 		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, color2);
 		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
-		drawCircle(enemies[i].x,enemies[i].y,250,"grey");
+		drawCircle(enemies[i].x,enemies[i].y,400,"grey");
 		
 		//drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
 		//drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
