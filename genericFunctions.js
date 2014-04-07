@@ -1,17 +1,24 @@
 var canvas = document.createElement("canvas");
-canvas.setAttribute('style', 'border: 1px solid');
 var context = canvas.getContext("2d");
-canvas.width = 640;
-canvas.height = 480;
-document.body.appendChild(canvas);
-
 var keysDown = {};
-addEventListener("keydown", function (e) { keysDown[e.keyCode] = true; }, false);
-addEventListener("keyup", function (e) { delete keysDown[e.keyCode]; }, false);
-
 var m_w = new Date().getTime(); 
 var m_z = 987654321; 
 var mask = 0xffffffff;
+
+canvas.setAttribute('style', 'border: 1px solid');
+canvas.width = 640;
+canvas.height = 480;
+document.body.appendChild(canvas);
+addEventListener("keydown", keyWentDown, false);
+addEventListener("keyup", keyWentUp, false);
+
+function keyWentDown (e) { 
+	keysDown[e.keyCode] = true; 
+}
+
+function keyWentUp (e) { 
+	delete keysDown[e.keyCode];
+}
 
 function seed(i) {
     m_w = i;
@@ -26,7 +33,7 @@ function randomDouble () {
 }
 
 function randomBetween (start,end) { 
-	return start + randomDouble() * (end-start); 
+	return start + randomDouble() * ( end - start ); 
 }
 
 function clear () {
@@ -34,62 +41,61 @@ function clear () {
 }
 
 function fillBox (x,y,w,h,color) {
-	context.fillStyle = color; context.fillRect(x,y,w,h); 
+	context.fillStyle = color;
+	context.fillRect(x,y,w,h); 
 	context.fillStyle = "black"; 
 }
 
 function drawCircle(x,y,r,color) {
-	context.beginPath(); context.strokeStyle = color;
+	context.beginPath();
+	context.strokeStyle = color;
 	context.arc(x,y,r,0,2*Math.PI);
-	context.stroke(); context.strokeStyle = "black";
+	context.stroke();
+	context.strokeStyle = "black";
 }
 
 function fillCircle(x,y,r,color) {
-	context.beginPath(); context.fillStyle = color;
+	context.beginPath();
+	context.fillStyle = color;
 	context.arc(x,y,r,0,2*Math.PI);
-	context.fill(); context.fillStyle = "black";
+	context.fill();
+	context.fillStyle = "black";
 }
 
 function writeText(text,x,y, color) {
-	context.fillStyle = color; context.fillText(text,x,y);
+	context.fillStyle = color;
+	context.fillText(text,x,y);
 	context.fillStyle = "black"; 
 }
 
 function drawLine(x1,y1,x2,y2, color) {
-	context.beginPath(); context.strokeStyle = color;
-	context.moveTo(x1,y1); context.lineTo(x2,y2); 
-	context.stroke(); context.strokeStyle = "black";
+	context.beginPath();
+	context.strokeStyle = color;
+	context.moveTo(x1,y1);
+	context.lineTo(x2,y2); 
+	context.stroke();
+	context.strokeStyle = "black";
 }
 
-function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, 
-		line2StartX, line2StartY, line2EndX, line2EndY) {
-    var denominator, a, b, numerator1, numerator2, result = {
-        x: null,
-        y: null,
-        onLine1: false,
-        onLine2: false
-    };
-    denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) -
-			((line2EndX - line2StartX) * (line1EndY - line1StartY));
-    if (denominator == 0) {
-        return result;
-    }
-    a = line1StartY - line2StartY;
-    b = line1StartX - line2StartX;
-    numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
-    numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
-    a = numerator1 / denominator;
-    b = numerator2 / denominator;
-    result.x = line1StartX + (a * (line1EndX - line1StartX));
-    result.y = line1StartY + (a * (line1EndY - line1StartY));
-    if (a > 0 && a < 1) {
-        result.onLine1 = true;
-    }
-    if (b > 0 && b < 1) {
-        result.onLine2 = true;
-    }
+function checkLineIntersection(line1, line2) {
+	var result = { x: null, y: null, onLine1: false, onLine2: false };
+	var denominator = ((line2.y2 - line2.y1) * (line1.x2 - line1.x1)) - ((line2.x2 - line2.x1) * (line1.y2 - line1.y1));
+    if (denominator == 0) return result;
+	found = findAandB(line1, line2, denominator);
+    result.x = line1.x1 + (found.a * (line1.x2 - line1.x1));
+    result.y = line1.y1 + (found.a * (line1.y2 - line1.y1));
+    if (found.a > 0 && found.a < 1) result.onLine1 = true;
+    if (found.b > 0 && found.b < 1) result.onLine2 = true;
     return result;
-};
+}
+
+function findAandB (line1, line2, denominator) {
+    var numerator1 = ((line2.x2 - line2.x1) * (line1.y1 - line2.y1)) - ((line2.y2 - line2.y1) * (line1.x1 - line2.x1));
+    var numerator2 = ((line1.x2 - line1.x1) * (line1.y1 - line2.y1)) - ((line1.y2 - line1.y1) * (line1.x1 - line2.x1));
+    var foundA = numerator1 / denominator;
+    var foundB = numerator2 / denominator;
+	return {a: foundA, b: foundB};
+}
 
 function angleOfLine(line1StartX, line1StartY, line1EndX, line1EndY) {
 	var angle = Math.atan2(line1StartY - line1EndY, line1StartX - line1EndX);
@@ -98,9 +104,10 @@ function angleOfLine(line1StartX, line1StartY, line1EndX, line1EndY) {
 
 function lineFrom(startX,startY,length,angle) {
 	var output = {};
-	output.x2 = Math.cos(angle) * length; output.y2 = Math.sin(angle) * length;
-	output.x2 += startX; output.y2 += startY;
-	output.x1 = startX; output.y1 = startY;
+	output.x2 = Math.cos(angle) * length + startX;
+	output.y2 = Math.sin(angle) * length + startY;
+	output.x1 = startX;
+	output.y1 = startY;
 	return output;
 }
 

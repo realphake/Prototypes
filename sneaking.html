@@ -81,7 +81,7 @@ function update () {
 			reward.taken -= 1;
 		}
 	}
-	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY) && ! (88 in keysDown) ) {
+	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) ) {
 		player.x = player.gotoX; player.y = player.gotoY;
 	}
 	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y; }
@@ -89,7 +89,7 @@ function update () {
 	if (! (88 in keysDown))
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var enemySpeed = 1;
-		if (noWallCollisions(enemies[i].x,enemies[i].y,player.x,player.y) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 400) {
+		if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 400) {
 			playerNotSeen = false;
 			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
 			if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
@@ -113,7 +113,7 @@ function update () {
 			var newY = randomBetween(0,480);
 			while(true) {
 				// Keep trying new places until we find one we can get to.
-				if (noWallCollisions(enemies[i].x,enemies[i].y,newX,newY)) break;
+				if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:newX,y2:newY})) break;
 				else {
 					var newX = randomBetween(0,640);
 					var newY = randomBetween(0,480);
@@ -122,14 +122,14 @@ function update () {
 			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 		}
 	}
-	var aimingAt = lineFrom(player.x, player.y, 1000, weaponAngle);
-	var intersect = ricochetPoint(aimingAt.x1, aimingAt.y1, aimingAt.x2, aimingAt.y2);
+	//var aimingAt = lineFrom(player.x, player.y, 1000, weaponAngle);
+	//var intersect = ricochetPoint(aimingAt);
 	//var wallAngle = angleOfLine(intersect.x1,intersect.y1,intersect.x2,intersect.y2);
 	//var angleOfThatLine = wallAngle+Math.PI-(angleOfLine(player.x,player.y,intersect.x,intersect.y)-wallAngle);
 	//var line = lineFrom(intersect.x,intersect.y,1000,angleOfThatLine);
 	//var stopPoint = ricochetPoint(line.x1,line.y1,line.x2,line.y2);
-	var stopPoint = ricochetPoint(intersect.x,intersect.y,aimingAt.x2,aimingAt.y2);
-	weapon.x1 = player.x; weapon.y1 = player.y; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
+	//var stopPoint = ricochetPoint({x1:intersect.x,y1:intersect.y,x2:aimingAt.x2,y2:aimingAt.y2});
+	//weapon.x1 = player.x; weapon.y1 = player.y; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
 	
 	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
@@ -147,7 +147,7 @@ function render () {
 		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
 	}
 	var color = "black";
-	if (noWallCollisions(player.x,player.y,player.gotoX,player.gotoY)) color = "lightblue";
+	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
 	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
 	drawCircle(reward.x,reward.y,reward.radius, "green");
@@ -172,12 +172,12 @@ function render () {
 	
 }
 
-function colorForWeapon(enemy) {
+/*function colorForWeapon(enemy) {
 	var color = "black";
 	if (oneWallCollision(enemy.x,enemy.y,player.x,player.y)) color = "red";
 	else color = "lightblue";
 	return color;
-}
+}*/
 
 function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle1 = angleOfLine( wallX1,wallY1,lightX,lightY);
@@ -205,46 +205,46 @@ function placeBox () {
 	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
 }
 
-function ricochetPoint(x1,y1,x2,y2) {
+/*function ricochetPoint(line) {
 	var length = 1000;
 	var found = {x:1,y:1, x1:0,y1:0,x2:0,y2:0};
 	for ( var j = 0; j < walls.length; j++ ) { 
-		var i = checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2);
+		var i = checkLineIntersection(line, walls[j]);
 		if ( i.onLine1 && i.onLine2 ) {
-			if (lengthOfLine(x1,y1,i.x,i.y) < length) {
+			if (lengthOfLine(line.x1,line.y1,i.x,i.y) < length) {
 				found.x = i.x; found.y = i.y;
 				found.x1 = walls[j].x1; found.y1 = walls[j].y1;
 				found.x2 = walls[j].x2; found.y2 = walls[j].y2;
-				length = lengthOfLine(x1,y1,i.x,i.y);
+				length = lengthOfLine(line.x1,line.y1,i.x,i.y);
 			}
 		}
 	}
 	return found;
-}
+}*/
 
 function colorForLineOfSight(enemy) {
 	var color = "black";
-	if (noWallCollisions(enemy.x,enemy.y,player.x,player.y)) color = "red";
+	if (noWallCollisions( {x1:enemy.x,y1:enemy.y,x2:player.x,y2:player.y} )) color = "red";
 	else color = "orange";
 	return color;
 }
 
-function noWallCollisions(x1,y1,x2,y2) {
+function noWallCollisions(line) {
 	for ( var j = 0; j < walls.length; j++ ) { 
-		var intersection = checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2);
+		var intersection = checkLineIntersection(line, walls[j]);
 		if ( intersection.onLine1 && intersection.onLine2 ) return false; 
 	}
 	return true;
 }
-function oneWallCollision(x1,y1,x2,y2) {
+/*function oneWallCollision(x1,y1,x2,y2) {
 	var collisions = 0;
 	for ( var j = 0; j < walls.length; j++ ) { 
-		var intersection = checkLineIntersection(x1,y1,x2,y2, walls[j].x1,walls[j].y1,walls[j].x2,walls[j].y2);
+		var intersection = checkLineIntersection({x1,y1,x2,y2}, walls[j]);
 		if ( intersection.onLine1 && intersection.onLine2 ) collisions += 1; 
 	}
 	if ( collisions <= 1 ) return true;
 	else return false;
-}
+}*/
 setInterval(function () { update(); render(); }, 20);
 </script>
 
