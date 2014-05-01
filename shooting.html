@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"><body>
+
+<script src="genericFunctions.js"></script>
+<script>
+
+var player = {x:630,y:470,gotoX:630,gotoY:470};
+var enemies = [{x:15,y:10,gotoX:15,gotoY:10},{x:10,y:15,gotoX:10,gotoY:15}];
+var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
+		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
+for (var x = 0; x < 30; x++) placeBox();
+var score;
+
+function shootyTimes() {
+	for ( var i = 0; i < enemies.length; i++ ) {
+		// Something
+	}
+}
+
+function update () { 
+	deltaX = 0; deltaY = 0;
+	if (87 in keysDown) deltaY -= 4;
+	if (83 in keysDown) deltaY += 4;
+	if (65 in keysDown) deltaX -= 4;
+	if (68 in keysDown) deltaX += 4;
+	if (38 in keysDown) deltaY -= 4;
+	if (40 in keysDown) deltaY += 4;
+	if (37 in keysDown) deltaX -= 4;
+	if (39 in keysDown) deltaX += 4;
+	if (88 in keysDown) { shootyTimes(); }
+	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
+	player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
+	if ( noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) ) {
+		player.x = player.gotoX; player.y = player.gotoY;
+	}
+	player.gotoX = player.x;player.gotoY = player.y;
+	for ( var i = 0; i < enemies.length; i++ ) {
+		var enemySpeed = 1;
+		if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 400) {
+			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
+			if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
+				score = 10;
+			}
+		}
+		var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
+		if ( journeyLength > enemySpeed ) {
+			// go partway to the destination
+			var partOfLine = enemySpeed/journeyLength;
+			enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
+			enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
+		} else {
+			// find a new destination
+			var newX = randomBetween(0,640);
+			var newY = randomBetween(0,480);
+			while(true) {
+				// Keep trying new places until we find one we can get to.
+				if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:newX,y2:newY})) break;
+				else {
+					var newX = randomBetween(0,640);
+					var newY = randomBetween(0,480);
+				}
+			}
+			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
+		}
+	}
+	//var aimingAt = lineFrom(player.x, player.y, 1000, weaponAngle);
+	//var intersect = ricochetPoint(aimingAt);
+	//var wallAngle = angleOfLine(intersect.x1,intersect.y1,intersect.x2,intersect.y2);
+	//var angleOfThatLine = wallAngle+Math.PI-(angleOfLine(player.x,player.y,intersect.x,intersect.y)-wallAngle);
+	//var line = lineFrom(intersect.x,intersect.y,1000,angleOfThatLine);
+	//var stopPoint = ricochetPoint(line.x1,line.y1,line.x2,line.y2);
+	//var stopPoint = ricochetPoint({x1:intersect.x,y1:intersect.y,x2:aimingAt.x2,y2:aimingAt.y2});
+	//weapon.x1 = player.x; weapon.y1 = player.y; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
+	
+}
+function render () { 
+	clear();
+	for ( var i = 0; i < walls.length; i++ ) {
+		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
+	}
+	var color = "black";
+	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
+	else color = "red";
+	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
+	fillBox(player.x-10, player.y-10, 20,20, "blue");
+	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
+	for ( var i = 0; i < enemies.length; i++ ) {
+		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, "red");
+		//drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
+		//drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
+	}
+	if (score > 0) {
+		writeText("final score: "+Math.floor(score),320,240, "green");
+		writeText("Reload the page to try again.",320,255, "green");
+	} else writeText("Score: "+Math.floor(careful+reckless),5,15, "green");
+	
+}
+
+function placeBox () {
+	rot = randomBetween(0, Math.PI*2);
+	scale = randomBetween(20,50);
+	var right = {x:Math.cos(rot),y:Math.sin(rot)}; var top = {x:Math.cos(rot+Math.PI*1.5),y:Math.sin(rot+Math.PI*1.5)}; 
+	var bottom = {x:Math.cos(rot+Math.PI/2),y:Math.sin(rot+Math.PI/2)}; var left = {x:Math.cos(rot+Math.PI),y:Math.sin(rot+Math.PI)};
+	var center = {x:randomBetween(0,640),y:randomBetween(0,480)};
+	walls.push({x1:right.x*scale+center.x,y1:right.y*scale+center.y,x2:top.x*scale+center.x,y2:top.y*scale+center.y});
+	walls.push({x1:top.x*scale+center.x,y1:top.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
+	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
+}
+
+function noWallCollisions(line) {
+	for ( var j = 0; j < walls.length; j++ ) { 
+		var intersection = checkLineIntersection(line, walls[j]);
+		if ( intersection.onLine1 && intersection.onLine2 ) return false; 
+	}
+	return true;
+}
+
+setInterval(function () { update(); render(); }, 20);
+</script>
+
+<p>Use the arrow keys to move; use the X key to dash.</p>
+
+</body></html>
