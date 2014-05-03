@@ -9,6 +9,7 @@ var enemies = [{x:15,y:10,gotoX:15,gotoY:10},{x:10,y:15,gotoX:10,gotoY:15}];
 var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
 for (var x = 0; x < 30; x++) placeBox();
+var weaponAngle = 0;
 var score;
 
 function shootyTimes() {
@@ -18,18 +19,20 @@ function shootyTimes() {
 }
 
 function update () { 
-	deltaX = 0; deltaY = 0;
-	if (87 in keysDown) deltaY -= 4;
-	if (83 in keysDown) deltaY += 4;
-	if (65 in keysDown) deltaX -= 4;
-	if (68 in keysDown) deltaX += 4;
-	if (38 in keysDown) deltaY -= 4;
-	if (40 in keysDown) deltaY += 4;
-	if (37 in keysDown) deltaX -= 4;
-	if (39 in keysDown) deltaX += 4;
+	var walk = 0;
+	if (87 in keysDown) walk += 4;
+	if (83 in keysDown) walk -= 4;
+	if (65 in keysDown) weaponAngle -= 0.1;
+	if (68 in keysDown) weaponAngle += 0.1;
+	if (38 in keysDown) walk += 4;
+	if (40 in keysDown) walk -= 4;
+	if (37 in keysDown) weaponAngle -= 0.1;
+	if (39 in keysDown) weaponAngle += 0.1;
 	if (88 in keysDown) { shootyTimes(); }
-	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
-	player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
+	
+	var delta = lineFrom(player.x, player.y, walk, weaponAngle );
+	
+	player.gotoY = delta.y2; player.gotoX = delta.x2;
 	if ( noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) ) {
 		player.x = player.gotoX; player.y = player.gotoY;
 	}
@@ -76,16 +79,21 @@ function update () {
 function render () { 
 	clear();
 	for ( var i = 0; i < walls.length; i++ ) {
-		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
+		var corner1 = rotateAround(walls[i].x1, walls[i].y1,player.x,player.y,weaponAngle);
+		var corner2 = rotateAround(walls[i].x2, walls[i].y2,player.x,player.y,weaponAngle);
+		drawLine(corner1.x, corner1.y, corner2.x, corner2.y,"black");
 	}
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
 	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
 	fillBox(player.x-10, player.y-10, 20,20, "blue");
-	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
+	drawLine(player.x,player.y,player.gotoX,player.gotoY, color);
+	var direction = lineFrom(player.x, player.y, 20, weaponAngle);
+	drawLine(player.x, player.y, direction.x2, direction.y2, "blue");
 	for ( var i = 0; i < enemies.length; i++ ) {
-		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, "red");
+		var enemyAt = rotateAround(enemies[i].x, enemies[i].y,player.x,player.y,weaponAngle);
+		fillBox(enemyAt.x-10, enemyAt.y-10, 20,20, "red");
 		//drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
 		//drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
 	}
@@ -94,6 +102,13 @@ function render () {
 		writeText("Reload the page to try again.",320,255, "green");
 	} else writeText("Score: "+Math.floor(careful+reckless),5,15, "green");
 	
+}
+
+function rotateAround(x1,y1,x2,y2,degrees) {
+	x1 -= x2; y1 -= y2;
+	x1 *= Math.sin(degrees)*1.41421356237; y1 *= Math.cos(degrees)*1.41421356237;
+	x1 += x2; y1 += y2;
+	return {x:x1,y:y1};
 }
 
 function placeBox () {
