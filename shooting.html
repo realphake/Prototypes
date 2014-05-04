@@ -39,7 +39,7 @@ function update () {
 	player.gotoX = player.x;player.gotoY = player.y;
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var enemySpeed = 1;
-		if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 400) {
+		if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 240) {
 			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
 			if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
 				score = 10;
@@ -78,22 +78,24 @@ function update () {
 }
 function render () { 
 	clear();
+	var cameraX = 320 - player.x; var cameraY = 240 - player.y;
 	for ( var i = 0; i < walls.length; i++ ) {
-		var corner1 = rotateAround(walls[i].x1, walls[i].y1,player.x,player.y,weaponAngle);
-		var corner2 = rotateAround(walls[i].x2, walls[i].y2,player.x,player.y,weaponAngle);
-		drawLine(corner1.x, corner1.y, corner2.x, corner2.y,"black");
+		var corner1 = rotateAround(walls[i].x1, walls[i].y1,player.x,player.y,weaponAngle+Math.PI/2);
+		var corner2 = rotateAround(walls[i].x2, walls[i].y2,player.x,player.y,weaponAngle+Math.PI/2);
+		drawLine(corner1.x+cameraX, corner1.y+cameraY, corner2.x+cameraX, corner2.y+cameraY,"black");
 	}
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
-	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
-	fillBox(player.x-10, player.y-10, 20,20, "blue");
-	drawLine(player.x,player.y,player.gotoX,player.gotoY, color);
+	fillBox(player.gotoX-10+cameraX, player.gotoY-10+cameraY, 20,20, "lightblue");
+	fillBox(player.x-10+cameraX, player.y-10+cameraY, 20,20, "blue");
+	drawLine(player.x+cameraX,player.y+cameraY,player.gotoX+cameraX,player.gotoY+cameraY, color);
 	var direction = lineFrom(player.x, player.y, 20, weaponAngle);
-	drawLine(player.x, player.y, direction.x2, direction.y2, "blue");
+	var aim = rotateAround(direction.x2, direction.y2,player.x,player.y,weaponAngle+Math.PI/2);
+	drawLine(player.x+cameraX, player.y+cameraY, aim.x+cameraX, aim.y+cameraY, "blue");
 	for ( var i = 0; i < enemies.length; i++ ) {
-		var enemyAt = rotateAround(enemies[i].x, enemies[i].y,player.x,player.y,weaponAngle);
-		fillBox(enemyAt.x-10, enemyAt.y-10, 20,20, "red");
+		var enemyAt = rotateAround(enemies[i].x, enemies[i].y,player.x,player.y,weaponAngle+Math.PI/2);
+		fillBox(enemyAt.x-10+cameraX, enemyAt.y-10+cameraY, 20,20, "red");
 		//drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
 		//drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
 	}
@@ -106,9 +108,10 @@ function render () {
 
 function rotateAround(x1,y1,x2,y2,degrees) {
 	x1 -= x2; y1 -= y2;
-	x1 *= Math.sin(degrees)*1.41421356237; y1 *= Math.cos(degrees)*1.41421356237;
-	x1 += x2; y1 += y2;
-	return {x:x1,y:y1};
+	var x1n = x1 * Math.cos(-degrees) - y1 * Math.sin(-degrees); 
+	var y1n = x1 * Math.sin(-degrees) + y1 * Math.cos(-degrees);
+	x1n += x2; y1n += y2;
+	return {x:x1n,y:y1n};
 }
 
 function placeBox () {
