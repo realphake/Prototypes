@@ -19,20 +19,22 @@ function shootyTimes() {
 }
 
 function update () { 
-	var walk = 0;
-	if (87 in keysDown) walk += 4;
-	if (83 in keysDown) walk -= 4;
-	if (65 in keysDown) weaponAngle -= 0.1;
-	if (68 in keysDown) weaponAngle += 0.1;
-	if (38 in keysDown) walk += 4;
-	if (40 in keysDown) walk -= 4;
-	if (37 in keysDown) weaponAngle -= 0.1;
-	if (39 in keysDown) weaponAngle += 0.1;
+	var walk = 0; var strafe = 0;
+	if (87 in keysDown) walk += 2; // w
+	if (83 in keysDown) walk -= 2; // s
+	if (65 in keysDown) strafe -= 2; // d
+	if (68 in keysDown) strafe += 2; // a
+	if (38 in keysDown) walk += 2; // up
+	if (40 in keysDown) walk -= 2; // down
+	if (37 in keysDown) weaponAngle -= 0.05; // right
+	if (39 in keysDown) weaponAngle += 0.05; // left
 	if (88 in keysDown) { shootyTimes(); }
 	
 	var delta = lineFrom(player.x, player.y, walk, weaponAngle );
-	
 	player.gotoY = delta.y2; player.gotoX = delta.x2;
+	var deltaStrafe = lineFrom(player.gotoX, player.gotoY, strafe, weaponAngle+(Math.PI/2) );
+	player.gotoY = deltaStrafe.y2; player.gotoX = deltaStrafe.x2;
+	
 	if ( noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) ) {
 		player.x = player.gotoX; player.y = player.gotoY;
 	}
