@@ -1,14 +1,34 @@
 <!DOCTYPE html>
-<html lang="en"><body>
+<html lang="en">
+<body>
+	
+	<script src="genericFunctions.js"></script>
+	
+	<script>
 
-<script src="genericFunctions.js"></script>
-<script>
+	function update () { 
+		/* 
+		// Game logic goes here. Examples:
+		keyWentDown (keycode); keyWentUp (keycode);
+		mouse.isDown; mouse.wentDownAt.x; mouse.isNowAt.y;
+		randomBetween (start,end);
+		// Some more utility stuff in genericFunctions.js.
+		*/ 
+	}
+	function render () { 
+		/* 
+		// Graphics code goes here. Examples:
+		clear ();
+		fillBox (x,y,w,h,color);
+		drawCircle (x,y,r,color); fillCircle (x,y,r,color);
+		writeText (text,x,y,color);
+		drawLine (x1,y1,x2,y2,color);
+		*/ 
+	}
 
-function update () { /* Game code goes here */ }
-function render () { /* Graphics code goes here */ }
+	setInterval(function () { update(); render(); }, 20);
 
-setInterval(function () { update(); render(); }, 20);
+	</script>
 
-</script>
-
-</body></html>
+</body>
+</html>

@@ -4,6 +4,11 @@ var keysDown = {};
 var m_w = new Date().getTime(); 
 var m_z = 987654321; 
 var mask = 0xffffffff;
+var mouse = {
+	isDown: false,
+	wentDownAt: {x: 320, y: 240},
+	isNowAt: {x: 320, y: 240}
+};
 
 canvas.setAttribute('style', 'border: 1px solid');
 canvas.width = 640;
@@ -11,6 +16,24 @@ canvas.height = 480;
 document.body.appendChild(canvas);
 addEventListener("keydown", keyWentDown, false);
 addEventListener("keyup", keyWentUp, false);
+canvas.addEventListener("mousedown", handleMouseDown, false);
+canvas.addEventListener("mouseup", handleMouseUp, false);
+canvas.addEventListener("mousemove", handleMouseMove, false);
+
+function handleMouseDown (e) {
+	mouse.isDown = true;
+	mouse.wentDownAt.x = e.pageX - canvas.offsetLeft;
+	mouse.wentDownAt.y = e.pageY - canvas.offsetTop;
+};
+
+function handleMouseUp (e) {
+	mouse.isDown = false;
+};
+
+function handleMouseMove (e) {
+	mouse.isNowAt.x = e.pageX - canvas.offsetLeft;
+	mouse.isNowAt.y = e.pageY - canvas.offsetTop;
+};
 
 function keyWentDown (e) { 
 	keysDown[e.keyCode] = true; 
