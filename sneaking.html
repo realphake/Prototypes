@@ -192,18 +192,6 @@ function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	context.fill(); context.fillStyle = "black"; context.strokeStyle = "black";
 }
 
-function placeBox () {
-	rot = randomBetween(0, Math.PI*2);
-	scale = randomBetween(20,50);
-	var right = {x:Math.cos(rot),y:Math.sin(rot)}; var top = {x:Math.cos(rot+Math.PI*1.5),y:Math.sin(rot+Math.PI*1.5)}; 
-	var bottom = {x:Math.cos(rot+Math.PI/2),y:Math.sin(rot+Math.PI/2)}; var left = {x:Math.cos(rot+Math.PI),y:Math.sin(rot+Math.PI)};
-	var center = {x:randomBetween(0,640),y:randomBetween(0,480)};
-	doors.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:right.x*scale+center.x,y2:right.y*scale+center.y});
-	walls.push({x1:right.x*scale+center.x,y1:right.y*scale+center.y,x2:top.x*scale+center.x,y2:top.y*scale+center.y});
-	walls.push({x1:top.x*scale+center.x,y1:top.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
-	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
-}
-
 function colorForLineOfSight(enemy) {
 	var color = "black";
 	if (noWallCollisions( {x1:enemy.x,y1:enemy.y,x2:player.x,y2:player.y} )) color = "red";
