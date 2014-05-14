@@ -4,38 +4,6 @@
 <script src="genericFunctions.js"></script>
 <script>
 
-var mouse = {
-isDown: false,
-justChanged: false,
-wentDownAt: {x: 320, y: 240},
-isNowAt: {x: 320, y: 240}
-};
-
-var handleMouseDown = function (e) {
-mouse.isDown = true;
-mouse.justChanged = true;
-mouse.wentDownAt.x = e.pageX - canvas.offsetLeft;
-mouse.wentDownAt.y = e.pageY - canvas.offsetTop;
-};
-
-var handleMouseUp = function (e) {
-mouse.isDown = false;
-mouse.justChanged = true;
-};
-
-var handleMouseMove = function (e) {
-mouse.isNowAt.x = e.pageX - canvas.offsetLeft;
-mouse.isNowAt.y = e.pageY - canvas.offsetTop;
-};
-
-var updateInput = function () {
-mouse.justChanged = false;
-};
-
-canvas.addEventListener("mousedown", handleMouseDown, false);
-canvas.addEventListener("mouseup", handleMouseUp, false);
-canvas.addEventListener("mousemove", handleMouseMove, false);
-
 var careful = 0; var reckless = 0;
 var score = 0; var temporaryScore = 0;
 var player = {x:630,y:470,gotoX:630,gotoY:470};
@@ -46,8 +14,58 @@ var weaponAngle = 0;
 var weapon = {x1:0,y1:0,x2:0,y2:0};
 var doors = [];
 var reward = {x:20,y:20,radius:10,taken:30};
-for (var x = 0; x < 30; x++) placeBox();
+var levelMap = 0;
+createLevel();
 var enemiesWaiting = [0,0];
+
+function createLevel() {
+	var hormap = 14;
+	var vertmap = 11;
+	var map = new Array(hormap);
+	for (var x = 0; x < hormap; x++) {
+		map[x] = new Array(vertmap);
+		for (var y = 0; y < vertmap; y++) {
+			map[x][y] = Math.round( randomBetween(0,1) );
+		}
+	}
+	var gridsz=50;
+	
+	for (var x = 0; x < hormap-1; x++) {
+		for (var y = 0; y < vertmap-1; y++) {
+			var totalWalkable = map[x][y] + map[x+1][y+1] + map[x+1][y] + map[x][y+1];
+			if ( totalWalkable == 1 || totalWalkable == 3 ) { // SOME CORNER
+				if ( map[x][y] != map[x+1][y] && map[x][y] != map[x][y+1] ) // LEFT-UP
+					walls.push({x1:(x+0.5)*gridsz,y1:(y)*gridsz,x2:(x)*gridsz,y2:(y+0.5)*gridsz});
+				else if ( map[x+1][y+1] != map[x+1][y] && map[x+1][y+1] != map[x][y+1] ) // RIGHT-DOWN
+					walls.push({x1:(x+0.5)*gridsz,y1:(y+1)*gridsz,x2:(x+1)*gridsz,y2:(y+0.5)*gridsz});
+				else if ( map[x+1][y] != map[x+1][y+1] && map[x+1][y] != map[x][y] ) // RIGHT-UP
+					walls.push({x1:(x+0.5)*gridsz,y1:(y)*gridsz,x2:(x+1)*gridsz,y2:(y+0.5)*gridsz});
+				else if ( map[x][y+1] != map[x+1][y+1] && map[x][y+1] != map[x][y] ) // LEFT-DOWN
+					walls.push({x1:(x+0.5)*gridsz,y1:(y+1)*gridsz,x2:(x)*gridsz,y2:(y+0.5)*gridsz});
+			}
+			if ( totalWalkable == 2 ) {
+				if ( map[x][y] == map[x+1][y+1] ) { // DIAGONAL 
+					if ( map[x][y] == 1 ) {
+						walls.push({x1:(x+0.5)*gridsz,y1:(y)*gridsz,x2:(x)*gridsz,y2:(y+0.5)*gridsz});
+						walls.push({x1:(x+0.5)*gridsz,y1:(y+1)*gridsz,x2:(x+1)*gridsz,y2:(y+0.5)*gridsz});
+					} else {
+						walls.push({x1:(x+0.5)*gridsz,y1:(y)*gridsz,x2:(x+1)*gridsz,y2:(y+0.5)*gridsz});
+						walls.push({x1:(x+0.5)*gridsz,y1:(y+1)*gridsz,x2:(x)*gridsz,y2:(y+0.5)*gridsz});
+					}
+				}
+				else { // STRAIGHT
+					if ( map[x][y] == map[x][y+1] ) // VERTICAL
+						walls.push({x1:(x+0.5)*gridsz,y1:(y+1)*gridsz,x2:(x+0.5)*gridsz,y2:(y)*gridsz});
+					else // HORIZONTAL
+						walls.push({x1:(x+1)*gridsz,y1:(y+0.5)*gridsz,x2:(x)*gridsz,y2:(y+0.5)*gridsz});
+				}
+			}
+		}
+	}
+	
+	levelMap = map;
+
+}
 
 function shootyTimes() {
 	for ( var i = 0; i < enemies.length; i++ ) {
@@ -122,14 +140,6 @@ function update () {
 			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 		}
 	}
-	//var aimingAt = lineFrom(player.x, player.y, 1000, weaponAngle);
-	//var intersect = ricochetPoint(aimingAt);
-	//var wallAngle = angleOfLine(intersect.x1,intersect.y1,intersect.x2,intersect.y2);
-	//var angleOfThatLine = wallAngle+Math.PI-(angleOfLine(player.x,player.y,intersect.x,intersect.y)-wallAngle);
-	//var line = lineFrom(intersect.x,intersect.y,1000,angleOfThatLine);
-	//var stopPoint = ricochetPoint(line.x1,line.y1,line.x2,line.y2);
-	//var stopPoint = ricochetPoint({x1:intersect.x,y1:intersect.y,x2:aimingAt.x2,y2:aimingAt.y2});
-	//weapon.x1 = player.x; weapon.y1 = player.y; weapon.x2 = stopPoint.x; weapon.y2 = stopPoint.y;
 	
 	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
@@ -157,13 +167,9 @@ function render () {
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var color = colorForLineOfSight(enemies[i]);
 		var color2 = "lightblue";
-		//var color2 = colorForWeapon(enemies[i]);
 		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, color2);
 		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
 		drawCircle(enemies[i].x,enemies[i].y,400,"grey");
-		
-		//drawLine(player.x, player.y,weapon.x1, weapon.y1, "red");
-		//drawLine(weapon.x1, weapon.y1,weapon.x2, weapon.y2, "red");
 	}
 	if (score > 0) {
 		writeText("final score: "+Math.floor(score),320,240, "green");
@@ -171,13 +177,6 @@ function render () {
 	} else writeText("Score: "+Math.floor(careful+reckless),5,15, "green");
 	
 }
-
-/*function colorForWeapon(enemy) {
-	var color = "black";
-	if (oneWallCollision(enemy.x,enemy.y,player.x,player.y)) color = "red";
-	else color = "lightblue";
-	return color;
-}*/
 
 function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle1 = angleOfLine( wallX1,wallY1,lightX,lightY);
@@ -205,23 +204,6 @@ function placeBox () {
 	walls.push({x1:bottom.x*scale+center.x,y1:bottom.y*scale+center.y,x2:left.x*scale+center.x,y2:left.y*scale+center.y});
 }
 
-/*function ricochetPoint(line) {
-	var length = 1000;
-	var found = {x:1,y:1, x1:0,y1:0,x2:0,y2:0};
-	for ( var j = 0; j < walls.length; j++ ) { 
-		var i = checkLineIntersection(line, walls[j]);
-		if ( i.onLine1 && i.onLine2 ) {
-			if (lengthOfLine(line.x1,line.y1,i.x,i.y) < length) {
-				found.x = i.x; found.y = i.y;
-				found.x1 = walls[j].x1; found.y1 = walls[j].y1;
-				found.x2 = walls[j].x2; found.y2 = walls[j].y2;
-				length = lengthOfLine(line.x1,line.y1,i.x,i.y);
-			}
-		}
-	}
-	return found;
-}*/
-
 function colorForLineOfSight(enemy) {
 	var color = "black";
 	if (noWallCollisions( {x1:enemy.x,y1:enemy.y,x2:player.x,y2:player.y} )) color = "red";
@@ -236,15 +218,7 @@ function noWallCollisions(line) {
 	}
 	return true;
 }
-/*function oneWallCollision(x1,y1,x2,y2) {
-	var collisions = 0;
-	for ( var j = 0; j < walls.length; j++ ) { 
-		var intersection = checkLineIntersection({x1,y1,x2,y2}, walls[j]);
-		if ( intersection.onLine1 && intersection.onLine2 ) collisions += 1; 
-	}
-	if ( collisions <= 1 ) return true;
-	else return false;
-}*/
+
 setInterval(function () { update(); render(); }, 20);
 </script>
 
