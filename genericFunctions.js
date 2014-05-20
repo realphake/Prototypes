@@ -107,8 +107,8 @@ function checkLineIntersection(line1, line2) {
 	found = findAandB(line1, line2, denominator);
     result.x = line1.x1 + (found.a * (line1.x2 - line1.x1));
     result.y = line1.y1 + (found.a * (line1.y2 - line1.y1));
-    if (found.a > 0 && found.a < 1) result.onLine1 = true;
-    if (found.b > 0 && found.b < 1) result.onLine2 = true;
+    if (found.a >= 0 && found.a <= 1) result.onLine1 = true;
+    if (found.b >= 0 && found.b <= 1) result.onLine2 = true;
     return result;
 }
 
