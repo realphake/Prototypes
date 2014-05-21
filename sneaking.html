@@ -108,9 +108,10 @@ function update () {
 		}
 	}
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) ) {
-		dashLength -= lengthOfLine(player.x, player.y, player.gotoX, player.gotoY );
+		var movedThisTic = lengthOfLine(player.x, player.y, player.gotoX, player.gotoY );
+		dashLength -= movedThisTic;
 		player.x = player.gotoX; player.y = player.gotoY;
-		dashLength += 3.75;
+		dashLength += Math.min(movedThisTic,4-0.25);
 	}
 	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; }
 	if (dashLength > dashMax) dashLength = dashMax;
