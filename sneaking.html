@@ -7,6 +7,8 @@
 var careful = 0; var reckless = 0;
 var score = 0; var temporaryScore = 0;
 var player = {x:50,y:50,gotoX:50,gotoY:50};
+var dashLength = 100;
+var dashMax = 100;
 var enemies = [{x:630,y:470,gotoX:630,gotoY:470},{x:320,y:240,gotoX:320,gotoY:240}];
 var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
@@ -90,10 +92,12 @@ function update () {
 	if (40 in keysDown) deltaY += 4;
 	if (37 in keysDown) deltaX -= 4;
 	if (39 in keysDown) deltaX += 4;
-	if (88 in keysDown) { }//shootyTimes(); }
+	if (88 in keysDown) { }
 	weaponAngle = angleOfLine(mouse.isNowAt.x,mouse.isNowAt.y,player.x,player.y);
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
-	player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
+	if ( lengthOfLine( player.x, player.y, player.gotoX + deltaX, player.gotoY + deltaY ) <= dashLength ) {
+		player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
+	}
 	if (deltaX == 0 && deltaY == 0) careful += 0.01;
 	else reckless += 0.01;
 	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius ) {
@@ -105,7 +109,10 @@ function update () {
 		}
 	}
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) ) {
+		dashLength -= lengthOfLine(player.x, player.y, player.gotoX, player.gotoY );
 		player.x = player.gotoX; player.y = player.gotoY;
+		dashLength += 4;
+		if (dashLength > dashMax) dashLength = dashMax;
 	}
 	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y; }
 	var playerNotSeen = true;
@@ -178,6 +185,7 @@ function render () {
 	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
 	drawCircle(reward.x,reward.y,reward.radius, "green");
 	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
+	drawCircle(player.x,player.y,dashLength, "red");
 	fillBox(player.x-10, player.y-10, 20,20, "blue");
 	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
 	for ( var i = 0; i < enemies.length; i++ ) {
