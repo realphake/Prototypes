@@ -9,7 +9,8 @@ var score = 0; var temporaryScore = 0;
 var player = {x:50,y:50,gotoX:50,gotoY:50};
 var dashLength = 100;
 var dashMax = 100;
-var enemies = [{x:630,y:470,gotoX:630,gotoY:470},{x:320,y:240,gotoX:320,gotoY:240}];
+var enemies = [{x:320,y:240,gotoX:320,gotoY:240},{x:320,y:240,gotoX:320,gotoY:240}];
+var viewDistance = 200;
 var walls = [{x1:5,y1:5,x2:5,y2:475},{x1:5,y1:5,x2:635,y2:5},
 		{x1:635,y1:5,x2:635,y2:475},{x1:5,y1:475,x2:635,y2:475}];
 var weaponAngle = 0;
@@ -92,8 +93,6 @@ function update () {
 	if (40 in keysDown) deltaY += 4;
 	if (37 in keysDown) deltaX -= 4;
 	if (39 in keysDown) deltaX += 4;
-	if (88 in keysDown) { }
-	weaponAngle = angleOfLine(mouse.isNowAt.x,mouse.isNowAt.y,player.x,player.y);
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
 	if ( lengthOfLine( player.x, player.y, player.gotoX + deltaX, player.gotoY + deltaY ) <= dashLength ) {
 		player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
@@ -111,45 +110,46 @@ function update () {
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) ) {
 		dashLength -= lengthOfLine(player.x, player.y, player.gotoX, player.gotoY );
 		player.x = player.gotoX; player.y = player.gotoY;
-		dashLength += 4;
-		if (dashLength > dashMax) dashLength = dashMax;
+		dashLength += 3.75;
 	}
-	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y; }
+	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; }
+	if (dashLength > dashMax) dashLength = dashMax;
 	var playerNotSeen = true;
-	if (! (88 in keysDown))
-	for ( var i = 0; i < enemies.length; i++ ) {
-		var enemySpeed = 1;
-		if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < 400) {
-			playerNotSeen = false;
-			enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
-			if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
-				if (score == 0) score = careful+reckless; 
-				careful = 0; reckless = 0;
-			} else temporaryScore += 10;
-		}
-		var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
-		if ( journeyLength > enemySpeed ) {
-			if (enemiesWaiting[i] > 0) {
-				enemiesWaiting[i] -= 1;
-			} else {
-				// go partway to the destination
-				var partOfLine = enemySpeed/journeyLength;
-				enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
-				enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
+	if (! (88 in keysDown)) {
+		for ( var i = 0; i < enemies.length; i++ ) {
+			var enemySpeed = 1;
+			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance) {
+				playerNotSeen = false;
+				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
+				if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
+					if (score == 0) score = careful+reckless; 
+					careful = 0; reckless = 0;
+				} else temporaryScore += 10;
 			}
-		} else {
-			// find a new destination
-			var newX = randomBetween(0,640);
-			var newY = randomBetween(0,480);
-			while(true) {
-				// Keep trying new places until we find one we can get to.
-				if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:newX,y2:newY})) break;
-				else {
-					var newX = randomBetween(0,640);
-					var newY = randomBetween(0,480);
+			var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
+			if ( journeyLength > enemySpeed ) {
+				if (enemiesWaiting[i] > 0) {
+					enemiesWaiting[i] -= 1;
+				} else {
+					// go partway to the destination
+					var partOfLine = enemySpeed/journeyLength;
+					enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
+					enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
 				}
+			} else {
+				// find a new destination
+				var newX = randomBetween(0,640);
+				var newY = randomBetween(0,480);
+				while(true) {
+					// Keep trying new places until we find one we can get to.
+					if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:newX,y2:newY})) break;
+					else {
+						var newX = randomBetween(0,640);
+						var newY = randomBetween(0,480);
+					}
+				}
+				enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 			}
-			enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 		}
 	}
 	
@@ -157,17 +157,24 @@ function update () {
 }
 function render () { 
 	clear();
-	context.beginPath(); context.strokeStyle = "lightgrey"; context.fillStyle = "lightgrey";
-	context.moveTo(0,0);
-	context.lineTo(0,480);
-	context.lineTo(640,480);
-	context.lineTo(640,0);
-	context.lineTo(0,0);
-	context.fill(); context.fillStyle = "black"; context.strokeStyle = "black";
+	context.strokeStyle = "lightgrey"; context.fillStyle = "lightgrey";
+	context.fillRect(0,0,640,480); 
+	context.fillStyle = "black"; context.strokeStyle = "black";
+	
 	for ( var i = 0; i < enemies.length; i++ ) {
+		tempContext.strokeStyle = "lightgrey"; tempContext.fillStyle = "lightgrey";
+		tempContext.fillRect(0,0,640,480); 
+		tempContext.globalCompositeOperation="destination-out";
+		tempContext.beginPath();
+		tempContext.arc(enemies[i].x,enemies[i].y,viewDistance,0,2*Math.PI);
+		tempContext.fill();
+		tempContext.fillStyle = "black"; tempContext.strokeStyle = "black";
+		tempContext.globalCompositeOperation="source-over";
+		
 		for ( var j = 0; j < walls.length; j++ ) {
 			drawShadow(enemies[i].x, enemies[i].y, walls[j].x1, walls[j].y1, walls[j].x2, walls[j].y2);
 		}
+		
 		context.globalCompositeOperation="source-in";
 		context.drawImage(tempCanvas, 0, 0);
 		context.globalCompositeOperation="source-over";
@@ -193,7 +200,6 @@ function render () {
 		var color2 = "lightblue";
 		drawLine(enemies[i].x, enemies[i].y, player.x, player.y, color2);
 		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, color);
-		drawCircle(enemies[i].x,enemies[i].y,400,"grey");
 	}
 	if (score > 0) {
 		writeText("final score: "+Math.floor(score),320,240, "green");
