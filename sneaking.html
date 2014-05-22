@@ -20,14 +20,30 @@ var levelMap = 0;
 createLevel();
 var enemiesWaiting = [0,0];
 
+var bgCanvas = document.createElement('canvas');
+bgCanvas.width = 640;
+bgCanvas.height = 480;
+var bgContext = bgCanvas.getContext('2d');
+
 var tempCanvas = document.createElement('canvas');
 tempCanvas.width = 640;
 tempCanvas.height = 480;
 var tempContext = tempCanvas.getContext('2d');
 
+var hormap = 20;
+var vertmap = 15;
+var gridsz=20;
+
+var march;
+
+function imageFrom(filename) {
+	result = new Image();
+	result.src = filename;
+	return result;
+}
+
 function createLevel() {
-	var hormap = 20;
-	var vertmap = 15;
+	
 	var rawmap = new Array(hormap);
 	for (var x = 0; x < hormap; x++) {
 		rawmap[x] = new Array(vertmap);
@@ -48,7 +64,6 @@ function createLevel() {
 			if ( count == 4 || count == 5 ) map[x][y] = rawmap[x][y];
 		}
 	}
-	var gridsz=20;
 	
 	for (var x = 0; x < hormap-1; x++) {
 		for (var y = 0; y < vertmap-1; y++) {
@@ -84,6 +99,8 @@ function createLevel() {
 	}
 	
 	levelMap = map;
+	
+	march = imageFrom("marchingsquares.png");
 
 }
 
@@ -188,9 +205,20 @@ function render () {
 	for ( var i = 0; i < doors.length; i++ ) {
 		drawLine(doors[i].x1, doors[i].y1, doors[i].x2, doors[i].y2,"lightgrey");
 	}
+	
+	/*for (var x = 0; x < hormap-1; x++) {
+		for (var y = 0; y < vertmap-1; y++) {
+			var number = levelMap[x][y]*1+levelMap[x+1][y]*2+levelMap[x][y+1]*4+levelMap[x+1][y+1]*8;
+			var sy = Math.floor(number/4);
+			var sx = number - sy;
+			bgContext.drawImage(images.march, sx*16,sy*16,16,16, x*gridsz,y*gridsz, gridsz,gridsz);
+		}
+	}*/
 	for ( var i = 0; i < walls.length; i++ ) {
 		drawLine(walls[i].x1, walls[i].y1, walls[i].x2, walls[i].y2,"black");
 	}
+	//context.drawImage(bgCanvas, 0, 0);
+	
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
