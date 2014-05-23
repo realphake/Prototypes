@@ -10,7 +10,6 @@ var player = {x:50,y:50,gotoX:50,gotoY:50};
 var dashLength = 100;
 var dashMax = 100;
 var enemies = [{x:300,y:300,gotoX:300,gotoY:300},{x:310,y:310,gotoX:310,gotoY:310}];
-var viewDistance = 200;
 var walls = [];
 var weaponAngle = 0;
 var weapon = {x1:0,y1:0,x2:0,y2:0};
@@ -29,9 +28,10 @@ tempCanvas.width = 640;
 tempCanvas.height = 480;
 var tempContext = tempCanvas.getContext('2d');
 
-var hormap = 20;
-var vertmap = 15;
-var gridsz=30;
+var hormap = 41;
+var vertmap = 31;
+var gridsz=16;
+var viewDistance = 100;
 
 var march;
 
@@ -182,7 +182,7 @@ function update () {
 function render () { 
 	clear();
 	
-	context.strokeStyle = "lightgrey"; context.fillStyle = "lightgrey";
+	context.strokeStyle = "black"; context.fillStyle = "black";
 	context.fillRect(0,0,640,480); 
 	context.fillStyle = "black"; context.strokeStyle = "black";
 	
@@ -197,7 +197,9 @@ function render () {
 		tempContext.globalCompositeOperation="source-over";
 		
 		for ( var j = 0; j < walls.length; j++ ) {
-			drawShadow(enemies[i].x, enemies[i].y, walls[j].x1, walls[j].y1, walls[j].x2, walls[j].y2);
+			if (lengthOfLine(walls[j].x1, walls[j].y1, enemies[i].x, enemies[i].y) < viewDistance ||
+					lengthOfLine(walls[j].x2, walls[j].y2, enemies[i].x, enemies[i].y) < viewDistance)
+				drawShadow(enemies[i].x, enemies[i].y, walls[j].x1, walls[j].y1, walls[j].x2, walls[j].y2);
 		}
 		
 		context.globalCompositeOperation="source-in";
