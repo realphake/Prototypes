@@ -4,8 +4,6 @@
 <script src="genericFunctions.js"></script>
 <script>
 
-var careful = 0; var reckless = 0;
-var score = 0; var temporaryScore = 0;
 var player = {x:50,y:50,gotoX:50,gotoY:50};
 var dashLength = 100;
 var dashMax = 100;
@@ -109,12 +107,9 @@ function update () {
 	if ( lengthOfLine( player.x, player.y, player.gotoX + deltaX, player.gotoY + deltaY ) <= dashLength ) {
 		player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
 	}
-	if (deltaX == 0 && deltaY == 0) careful += 0.01;
-	else reckless += 0.01;
 	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius ) {
 		if (reward.taken < 0) {
-			careful += 100; reward.taken = 30;
-			reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
+			reward.taken = 30; reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
 		} else {
 			reward.taken -= 1;
 		}
@@ -134,10 +129,6 @@ function update () {
 			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance) {
 				playerNotSeen = false;
 				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
-				if (lengthOfLine(player.x,player.y, enemies[i].x,enemies[i].y) < 10) { 
-					if (score == 0) score = careful+reckless; 
-					careful = 0; reckless = 0;
-				} else temporaryScore += 10;
 			}
 			var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
 			if ( journeyLength > enemySpeed ) {
@@ -161,8 +152,6 @@ function update () {
 			}
 		}
 	}
-	
-	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
 
 function render () { 
@@ -178,7 +167,6 @@ function render () {
 					lengthOfLine(walls[j].x2, walls[j].y2, enemies[i].x, enemies[i].y) < viewDistance)
 				drawShadow(enemies[i].x, enemies[i].y, walls[j].x1, walls[j].y1, walls[j].x2, walls[j].y2);
 		}
-		
 		deployChanges("source-in",1);
 	}
 	
@@ -187,29 +175,24 @@ function render () {
 			var number = levelMap[x][y]*1+levelMap[x+1][y]*2+levelMap[x+1][y+1]*4+levelMap[x][y+1]*8;
 			var sy = Math.floor(number/4);
 			var sx = number - sy*4;
-			
 			drawImage(march, x*gridsz,y*gridsz, gridsz,gridsz, sx*16,sy*16, 16,16, true);
 		}
 	}
 	deployChanges("source-over", 0.5);
 	
-	var color = "black";
-	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
-	else color = "red";
 	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
 	drawCircle(reward.x,reward.y,reward.radius, "green");
 	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
-	drawCircle(player.x,player.y,dashLength, "red");
+	drawCircle(player.x,player.y,dashLength, "blue");
 	fillBox(player.x-10, player.y-10, 20,20, "blue");
+	var color = "black";
+	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
+	else color = "red";
 	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
 	for ( var i = 0; i < enemies.length; i++ ) {
 		var color2 = "lightblue";
 		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, "red");
 	}
-	if (score > 0) {
-		writeText("final score: "+Math.floor(score),320,240, "green");
-		writeText("Reload the page to try again.",320,255, "green");
-	} else writeText("Score: "+Math.floor(careful+reckless),5,15, "green");
 	
 }
 
@@ -220,13 +203,6 @@ function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var line2 = lineFrom(wallX2,wallY2,1000,angle2);
 	fillQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);
 	drawQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);	
-}
-
-function colorForLineOfSight(enemy) {
-	var color = "black";
-	if (noWallCollisions( {x1:enemy.x,y1:enemy.y,x2:player.x,y2:player.y} )) color = "red";
-	else color = "orange";
-	return color;
 }
 
 function noWallCollisions(line) {
