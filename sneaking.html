@@ -187,7 +187,7 @@ function render () {
 	context.fillStyle = "black"; context.strokeStyle = "black";
 	
 	for ( var i = 0; i < enemies.length; i++ ) {
-		tempContext.strokeStyle = "lightgrey"; tempContext.fillStyle = "lightgrey";
+		tempContext.strokeStyle = "black"; tempContext.fillStyle = "black";
 		tempContext.fillRect(0,0,640,480); 
 		tempContext.globalCompositeOperation="destination-out";
 		tempContext.beginPath();
@@ -214,9 +214,9 @@ function render () {
 			bgContext.drawImage(march, sx*16,sy*16,16,16, x*gridsz,y*gridsz, gridsz,gridsz);
 		}
 	}
-	context.globalAlpha = 0.3;
+	context.globalAlpha=0.5;
 	context.drawImage(bgCanvas, 0, 0);
-	context.globalAlpha = 1;
+	context.globalAlpha=1;
 	
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
@@ -243,7 +243,7 @@ function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle2 = angleOfLine( wallX2,wallY2,lightX,lightY);
 	var line1 = lineFrom(wallX1,wallY1,1000,angle1);
 	var line2 = lineFrom(wallX2,wallY2,1000,angle2);
-	tempContext.beginPath(); tempContext.strokeStyle = "lightgrey"; tempContext.fillStyle = "lightgrey";
+	tempContext.beginPath(); tempContext.strokeStyle = "black"; tempContext.fillStyle = "black";
 	tempContext.moveTo(wallX1,wallY1);
 	tempContext.lineTo(line1.x2,line1.y2);
 	tempContext.lineTo(line2.x2,line2.y2);
