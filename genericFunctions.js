@@ -65,17 +65,15 @@ function randomBetween (start,end) {
 }
 
 function deployChanges(compositeMethod, alpha) {
-	context.globalCompositeOperation=compositeMethod;
-	context.globalAlpha=0.5;
+	context.globalCompositeOperation=compositeMethod; context.globalAlpha=0.5;
 	context.drawImage(tempCanvas, 0, 0);
-	context.globalCompositeOperation="source-over";
-	context.globalAlpha=1;
+	context.globalCompositeOperation="source-over"; context.globalAlpha=1;
 	tempCanvas.width = tempCanvas.width; 
 }
 
-function drawImage(march, x,y, horsize,vertsize, cropx,cropy, crophor,cropvert, waitForPush) {
-	if ( waitForPush ) tempContext.drawImage(march, cropx,cropy,crophor,cropvert, x,y, horsize,vertsize); 
-	else context.drawImage(march, cropx,cropy,crophor,cropvert, x,y, horsize,vertsize);
+function drawImage(march, x,y, horsize,vertsize, cropx,cropy, crophor,cropvert, wait) {
+	var c = context; if (wait) c = tempContext;
+	c.drawImage(march, cropx,cropy,crophor,cropvert, x,y, horsize,vertsize);
 }
 
 function clear () {
@@ -83,78 +81,49 @@ function clear () {
 }
 
 function fillBox (x,y,w,h,color,wait) {
-	if ( wait ) {
-		tempContext.fillStyle = color;
-		tempContext.fillRect(x,y,w,h); 
-		tempContext.fillStyle = "black"; 
-	} else {
-		context.fillStyle = color;
-		context.fillRect(x,y,w,h); 
-		context.fillStyle = "black"; 
-	}
+	var c = context; if (wait) c = tempContext;
+	c.fillStyle = color; c.fillRect(x,y,w,h); c.fillStyle = "black";
 }
 
-function drawCircle(x,y,r,color) {
-	context.beginPath();
-	context.strokeStyle = color;
-	context.arc(x,y,r,0,2*Math.PI);
-	context.stroke();
-	context.strokeStyle = "black";
+function drawCircle(x,y,r,color,wait) {
+	var c = context; if (wait) c = tempContext;
+	c.beginPath(); c.arc(x,y,r,0,2*Math.PI);
+	c.strokeStyle = color; c.stroke(); c.strokeStyle = "black";
 }
 
 function fillQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color, wait) {
-	if ( wait ) {
-		tempContext.beginPath(); tempContext.strokeStyle = color; tempContext.fillStyle = color;
-		tempContext.moveTo(x11,y11);
-		tempContext.lineTo(x12,y12);
-		tempContext.lineTo(x22,y22);
-		tempContext.lineTo(x21,y21);
-		tempContext.lineTo(x11,y11);
-		tempContext.fill(); tempContext.fillStyle = "black"; tempContext.strokeStyle = "black";
-	} else {
-		context.beginPath(); context.strokeStyle = color; context.fillStyle = color;
-		context.moveTo(x11,y11);
-		context.lineTo(x12,y12);
-		context.lineTo(x22,y22);
-		context.lineTo(x21,y21);
-		context.lineTo(x11,y11);
-		context.fill(); context.fillStyle = "black"; context.strokeStyle = "black";
-	}
+	var c = context; if (wait) c = tempContext;
+	c.beginPath(); c.moveTo(x11,y11); c.lineTo(x12,y12); c.lineTo(x22,y22); c.lineTo(x21,y21); c.lineTo(x11,y11);
+	c.fillStyle = color; c.fill(); c.fillStyle = "black";
 }
 
-function fillCircle(x,y,r,color,wait,composite) {
-	if ( wait ) {
-		tempContext.globalCompositeOperation=composite;
-		tempContext.beginPath();
-		tempContext.fillStyle = color;
-		tempContext.arc(x,y,r,0,2*Math.PI);
-		tempContext.fill();
-		tempContext.fillStyle = "black";
-		tempContext.globalCompositeOperation="source-over";
-	} else {
-		context.globalCompositeOperation=composite;
-		context.beginPath();
-		context.fillStyle = color;
-		context.arc(x,y,r,0,2*Math.PI);
-		context.fill();
-		context.fillStyle = "black";
-		context.globalCompositeOperation="source-over";
-	}
+function drawQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color, wait) {
+	var c = context; if (wait) c = tempContext;
+	c.beginPath(); c.moveTo(x11,y11); c.lineTo(x12,y12); c.lineTo(x22,y22); c.lineTo(x21,y21); c.lineTo(x11,y11);
+	c.strokeStyle = color; c.stroke(); c.strokeStyle = "black";
 }
 
-function writeText(text,x,y, color) {
-	context.fillStyle = color;
-	context.fillText(text,x,y);
-	context.fillStyle = "black"; 
+function fillCircle(x,y,r,color,wait) {
+	var c = context; if (wait) c = tempContext;
+	c.beginPath(); c.arc(x,y,r,0,2*Math.PI);
+	c.fillStyle = color; c.fill(); c.fillStyle = "black";
 }
 
-function drawLine(x1,y1,x2,y2, color) {
-	context.beginPath();
-	context.strokeStyle = color;
-	context.moveTo(x1,y1);
-	context.lineTo(x2,y2); 
-	context.stroke();
-	context.strokeStyle = "black";
+function writeText(text,x,y, color,wait) {
+	var c = context; if (wait) c = tempContext;
+	c.fillStyle = color;
+	c.fillText(text,x,y);
+	c.fillStyle = "black"; 
+}
+
+function drawLine(x1,y1,x2,y2, color,wait) {
+	var c = context; if (wait) c = tempContext;
+	c.beginPath();
+	c.strokeStyle = color;
+	c.moveTo(x1,y1);
+	c.lineTo(x2,y2); 
+	c.stroke();
+	c.strokeStyle = "black";
 }
 
 function checkLineIntersection(line1, line2) {

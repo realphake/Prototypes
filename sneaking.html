@@ -172,8 +172,9 @@ function render () {
 	
 	for ( var i = 0; i < enemies.length; i++ ) {
 		fillBox(0,0,640,480,"black", true);
-		fillCircle(enemies[i].x,enemies[i].y,viewDistance,"black", true, "destination-out");
-		
+		tempContext.globalCompositeOperation="destination-out";
+		fillCircle(enemies[i].x,enemies[i].y,viewDistance,"black", true);
+		tempContext.globalCompositeOperation="source-over";
 		for ( var j = 0; j < walls.length; j++ ) {
 			if (lengthOfLine(walls[j].x1, walls[j].y1, enemies[i].x, enemies[i].y) < viewDistance ||
 					lengthOfLine(walls[j].x2, walls[j].y2, enemies[i].x, enemies[i].y) < viewDistance)
