@@ -167,9 +167,7 @@ function update () {
 
 function render () { 
 	clear();
-	
 	fillBox(0,0,640,480,"black");
-	
 	for ( var i = 0; i < enemies.length; i++ ) {
 		fillBox(0,0,640,480,"black", true);
 		tempContext.globalCompositeOperation="destination-out";
@@ -220,7 +218,8 @@ function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle2 = angleOfLine( wallX2,wallY2,lightX,lightY);
 	var line1 = lineFrom(wallX1,wallY1,1000,angle1);
 	var line2 = lineFrom(wallX2,wallY2,1000,angle2);
-	fillQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);	
+	fillQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);
+	drawQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);	
 }
 
 function colorForLineOfSight(enemy) {
