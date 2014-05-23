@@ -16,24 +16,13 @@ var weapon = {x1:0,y1:0,x2:0,y2:0};
 var weapon = {x1:0,y1:0,x2:0,y2:0};
 var reward = {x:20,y:20,radius:10,taken:30};
 var levelMap = 0;
-var enemiesWaiting = [0,0];
-
-var bgCanvas = document.createElement('canvas');
-bgCanvas.width = 640;
-bgCanvas.height = 480;
-var bgContext = bgCanvas.getContext('2d');
-
-var tempCanvas = document.createElement('canvas');
-tempCanvas.width = 640;
-tempCanvas.height = 480;
-var tempContext = tempCanvas.getContext('2d');
 
 var hormap = 41;
 var vertmap = 31;
 var gridsz=16;
 var viewDistance = 100;
 
-var march;
+var march = 0;
 
 createLevel();
 
@@ -152,14 +141,10 @@ function update () {
 			}
 			var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
 			if ( journeyLength > enemySpeed ) {
-				if (enemiesWaiting[i] > 0) {
-					enemiesWaiting[i] -= 1;
-				} else {
-					// go partway to the destination
-					var partOfLine = enemySpeed/journeyLength;
-					enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
-					enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
-				}
+				// go partway to the destination
+				var partOfLine = enemySpeed/journeyLength;
+				enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
+				enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
 			} else {
 				// find a new destination
 				var newX = randomBetween(0,640);
@@ -179,22 +164,15 @@ function update () {
 	
 	if (playerNotSeen) { reckless += temporaryScore; temporaryScore = 0; }
 }
+
 function render () { 
 	clear();
 	
-	context.strokeStyle = "black"; context.fillStyle = "black";
-	context.fillRect(0,0,640,480); 
-	context.fillStyle = "black"; context.strokeStyle = "black";
+	fillBox(0,0,640,480,"black");
 	
 	for ( var i = 0; i < enemies.length; i++ ) {
-		tempContext.strokeStyle = "black"; tempContext.fillStyle = "black";
-		tempContext.fillRect(0,0,640,480); 
-		tempContext.globalCompositeOperation="destination-out";
-		tempContext.beginPath();
-		tempContext.arc(enemies[i].x,enemies[i].y,viewDistance,0,2*Math.PI);
-		tempContext.fill();
-		tempContext.fillStyle = "black"; tempContext.strokeStyle = "black";
-		tempContext.globalCompositeOperation="source-over";
+		fillBox(0,0,640,480,"black", true);
+		fillCircle(enemies[i].x,enemies[i].y,viewDistance,"black", true, "destination-out");
 		
 		for ( var j = 0; j < walls.length; j++ ) {
 			if (lengthOfLine(walls[j].x1, walls[j].y1, enemies[i].x, enemies[i].y) < viewDistance ||
@@ -202,10 +180,7 @@ function render () {
 				drawShadow(enemies[i].x, enemies[i].y, walls[j].x1, walls[j].y1, walls[j].x2, walls[j].y2);
 		}
 		
-		context.globalCompositeOperation="source-in";
-		context.drawImage(tempCanvas, 0, 0);
-		context.globalCompositeOperation="source-over";
-		tempCanvas.width = tempCanvas.width; 
+		deployChanges("source-in",1);
 	}
 	
 	for (var x = 0; x < hormap-1; x++) {
@@ -213,12 +188,11 @@ function render () {
 			var number = levelMap[x][y]*1+levelMap[x+1][y]*2+levelMap[x+1][y+1]*4+levelMap[x][y+1]*8;
 			var sy = Math.floor(number/4);
 			var sx = number - sy*4;
-			bgContext.drawImage(march, sx*16,sy*16,16,16, x*gridsz,y*gridsz, gridsz,gridsz);
+			
+			drawImage(march, x*gridsz,y*gridsz, gridsz,gridsz, sx*16,sy*16, 16,16, true);
 		}
 	}
-	context.globalAlpha=0.5;
-	context.drawImage(bgCanvas, 0, 0);
-	context.globalAlpha=1;
+	deployChanges("source-over", 0.5);
 	
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
@@ -245,13 +219,7 @@ function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle2 = angleOfLine( wallX2,wallY2,lightX,lightY);
 	var line1 = lineFrom(wallX1,wallY1,1000,angle1);
 	var line2 = lineFrom(wallX2,wallY2,1000,angle2);
-	tempContext.beginPath(); tempContext.strokeStyle = "black"; tempContext.fillStyle = "black";
-	tempContext.moveTo(wallX1,wallY1);
-	tempContext.lineTo(line1.x2,line1.y2);
-	tempContext.lineTo(line2.x2,line2.y2);
-	tempContext.lineTo(wallX2,wallY2);
-	tempContext.lineTo(wallX1,wallY1);
-	tempContext.fill(); tempContext.stroke(); tempContext.fillStyle = "black"; tempContext.strokeStyle = "black";
+	fillQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);	
 }
 
 function colorForLineOfSight(enemy) {

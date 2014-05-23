@@ -20,6 +20,11 @@ canvas.addEventListener("mousedown", handleMouseDown, false);
 canvas.addEventListener("mouseup", handleMouseUp, false);
 canvas.addEventListener("mousemove", handleMouseMove, false);
 
+var tempCanvas = document.createElement('canvas');
+tempCanvas.width = 640;
+tempCanvas.height = 480;
+var tempContext = tempCanvas.getContext('2d');
+
 function handleMouseDown (e) {
 	mouse.isDown = true;
 	mouse.wentDownAt.x = e.pageX - canvas.offsetLeft;
@@ -59,14 +64,34 @@ function randomBetween (start,end) {
 	return start + randomDouble() * ( end - start ); 
 }
 
+function deployChanges(compositeMethod, alpha) {
+	context.globalCompositeOperation=compositeMethod;
+	context.globalAlpha=0.5;
+	context.drawImage(tempCanvas, 0, 0);
+	context.globalCompositeOperation="source-over";
+	context.globalAlpha=1;
+	tempCanvas.width = tempCanvas.width; 
+}
+
+function drawImage(march, x,y, horsize,vertsize, cropx,cropy, crophor,cropvert, waitForPush) {
+	if ( waitForPush ) tempContext.drawImage(march, cropx,cropy,crophor,cropvert, x,y, horsize,vertsize); 
+	else context.drawImage(march, cropx,cropy,crophor,cropvert, x,y, horsize,vertsize);
+}
+
 function clear () {
 	canvas.width = canvas.width; 
 }
 
-function fillBox (x,y,w,h,color) {
-	context.fillStyle = color;
-	context.fillRect(x,y,w,h); 
-	context.fillStyle = "black"; 
+function fillBox (x,y,w,h,color,wait) {
+	if ( wait ) {
+		tempContext.fillStyle = color;
+		tempContext.fillRect(x,y,w,h); 
+		tempContext.fillStyle = "black"; 
+	} else {
+		context.fillStyle = color;
+		context.fillRect(x,y,w,h); 
+		context.fillStyle = "black"; 
+	}
 }
 
 function drawCircle(x,y,r,color) {
@@ -77,12 +102,44 @@ function drawCircle(x,y,r,color) {
 	context.strokeStyle = "black";
 }
 
-function fillCircle(x,y,r,color) {
-	context.beginPath();
-	context.fillStyle = color;
-	context.arc(x,y,r,0,2*Math.PI);
-	context.fill();
-	context.fillStyle = "black";
+function fillQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color, wait) {
+	if ( wait ) {
+		tempContext.beginPath(); tempContext.strokeStyle = color; tempContext.fillStyle = color;
+		tempContext.moveTo(x11,y11);
+		tempContext.lineTo(x12,y12);
+		tempContext.lineTo(x22,y22);
+		tempContext.lineTo(x21,y21);
+		tempContext.lineTo(x11,y11);
+		tempContext.fill(); tempContext.fillStyle = "black"; tempContext.strokeStyle = "black";
+	} else {
+		context.beginPath(); context.strokeStyle = color; context.fillStyle = color;
+		context.moveTo(x11,y11);
+		context.lineTo(x12,y12);
+		context.lineTo(x22,y22);
+		context.lineTo(x21,y21);
+		context.lineTo(x11,y11);
+		context.fill(); context.fillStyle = "black"; context.strokeStyle = "black";
+	}
+}
+
+function fillCircle(x,y,r,color,wait,composite) {
+	if ( wait ) {
+		tempContext.globalCompositeOperation=composite;
+		tempContext.beginPath();
+		tempContext.fillStyle = color;
+		tempContext.arc(x,y,r,0,2*Math.PI);
+		tempContext.fill();
+		tempContext.fillStyle = "black";
+		tempContext.globalCompositeOperation="source-over";
+	} else {
+		context.globalCompositeOperation=composite;
+		context.beginPath();
+		context.fillStyle = color;
+		context.arc(x,y,r,0,2*Math.PI);
+		context.fill();
+		context.fillStyle = "black";
+		context.globalCompositeOperation="source-over";
+	}
 }
 
 function writeText(text,x,y, color) {
