@@ -103,30 +103,27 @@ function update () {
 	if (37 in keysDown) deltaX -= 4;
 	if (39 in keysDown) deltaX += 4;
 	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
-	if ( lengthOfLine( player.x, player.y, player.gotoX + deltaX, player.gotoY + deltaY ) <= dashLength ) {
+	if ( lengthOfLine( player.x, player.y, player.gotoX + deltaX, player.gotoY + deltaY ) <= dashLength && !player.dead ) {
 		player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
 	}
-	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius+player.radius && ! (88 in keysDown) ) {
-		if (reward.taken < 0) {
-			reward.taken = 30; reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
-		} else {
-			reward.taken -= 1;
-		}
+	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius+player.radius && ! (88 in keysDown) && !player.dead ) {
+		if (reward.taken < 0) { reward.taken = 30; reward.x = randomBetween(0,640); reward.y = randomBetween(0,480); } 
+		else { reward.taken -= 1; }
 	}
-	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) ) {
+	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) && !player.dead ) {
 		var movedThisTic = lengthOfLine(player.x, player.y, player.gotoX, player.gotoY );
 		dashLength -= movedThisTic;
 		player.x = player.gotoX; player.y = player.gotoY;
 		dashLength += Math.min(movedThisTic,4-0.25);
 	}
-	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; hungry -= 0.01 }
+	if (! (88 in keysDown) && !player.dead) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; hungry -= 0.01 }
 	if (hungry < 0) hungry = 0;
 	if (dashLength > dashMax) dashLength = dashMax;
 	var playerNotSeen = true;
 	if (! (88 in keysDown)) {
 		for ( var i = 0; i < enemies.length; i++ ) {
 			var enemySpeed = 1;
-			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance-player.radius) {
+			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance-player.radius && !player.dead) {
 				playerNotSeen = false;
 				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
 			}
@@ -199,7 +196,10 @@ function render () {
 	}
 	
 	fillBox(5,5,6.30*hungry,5,"orange");
-	if (player.dead) writeText("You have died!",320,240, "red")
+	if (player.dead) {
+		context.globalAlpha = 0.3;fillBox(0,0,640,480,"red");context.globalAlpha = 1;
+		writeText("You have died!",320,240, "red");
+	}
 	
 }
 
