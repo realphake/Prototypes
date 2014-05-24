@@ -193,7 +193,7 @@ function render () {
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
-	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
+	drawLine(player.x,player.y,player.gotoX,player.gotoY, color);
 	for ( var i = 0; i < enemies.length; i++ ) {
 		fillCircle(enemies[i].x, enemies[i].y, enemies[i].radius, "red");
 	}
