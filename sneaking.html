@@ -4,16 +4,15 @@
 <script src="genericFunctions.js"></script>
 <script>
 
-var player = {x:50,y:50,gotoX:50,gotoY:50};
+var player = {x:50,y:50,gotoX:50,gotoY:50,radius:10,dead:false};
 var dashLength = 100;
 var dashMax = 100;
-var enemies = [{x:300,y:300,gotoX:300,gotoY:300},{x:310,y:310,gotoX:310,gotoY:310}];
+var enemies = [{x:300,y:300,gotoX:300,gotoY:300,radius:10},{x:310,y:310,gotoX:310,gotoY:310,radius:10}];
 var walls = [];
-var weaponAngle = 0;
-var weapon = {x1:0,y1:0,x2:0,y2:0};
-var weapon = {x1:0,y1:0,x2:0,y2:0};
 var reward = {x:20,y:20,radius:10,taken:30};
 var levelMap = 0;
+
+var hungry = 100;
 
 var hormap = 41;
 var vertmap = 31;
@@ -107,7 +106,7 @@ function update () {
 	if ( lengthOfLine( player.x, player.y, player.gotoX + deltaX, player.gotoY + deltaY ) <= dashLength ) {
 		player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
 	}
-	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius ) {
+	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius+player.radius && ! (88 in keysDown) ) {
 		if (reward.taken < 0) {
 			reward.taken = 30; reward.x = randomBetween(0,640); reward.y = randomBetween(0,480);
 		} else {
@@ -120,13 +119,14 @@ function update () {
 		player.x = player.gotoX; player.y = player.gotoY;
 		dashLength += Math.min(movedThisTic,4-0.25);
 	}
-	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; }
+	if (! (88 in keysDown)) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; hungry -= 0.01 }
+	if (hungry < 0) hungry = 0;
 	if (dashLength > dashMax) dashLength = dashMax;
 	var playerNotSeen = true;
 	if (! (88 in keysDown)) {
 		for ( var i = 0; i < enemies.length; i++ ) {
 			var enemySpeed = 1;
-			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance) {
+			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance-player.radius) {
 				playerNotSeen = false;
 				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
 			}
@@ -150,6 +150,11 @@ function update () {
 				}
 				enemies[i].gotoX = newX; enemies[i].gotoY = newY;
 			}
+		}
+	}
+	for ( var i = 0; i < enemies.length; i++ ) {
+		if (hungry <= 0 || lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < enemies[i].radius+player.radius) {
+			player.dead = true;
 		}
 	}
 }
@@ -182,17 +187,19 @@ function render () {
 	
 	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
 	drawCircle(reward.x,reward.y,reward.radius, "green");
-	fillBox(player.gotoX-10, player.gotoY-10, 20,20, "lightblue");
+	fillCircle(player.gotoX, player.gotoY, player.radius, "lightblue");
 	drawCircle(player.x,player.y,dashLength, "blue");
-	fillBox(player.x-10, player.y-10, 20,20, "blue");
+	fillCircle(player.x, player.y, player.radius, "blue");
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
 	drawLine(player.x,player.y,player.gotoX,player.gotoY, color)
 	for ( var i = 0; i < enemies.length; i++ ) {
-		var color2 = "lightblue";
-		fillBox(enemies[i].x-10, enemies[i].y-10, 20,20, "red");
+		fillCircle(enemies[i].x, enemies[i].y, enemies[i].radius, "red");
 	}
+	
+	fillBox(5,5,6.30*hungry,5,"orange");
+	if (player.dead) writeText("You have died!",320,240, "red")
 	
 }
 
