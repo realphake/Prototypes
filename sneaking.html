@@ -4,13 +4,14 @@
 <script src="genericFunctions.js"></script>
 <script>
 
-var player = {x:50,y:50,gotoX:50,gotoY:50,radius:10,dead:false};
+var player = {x:50,y:50,gotoX:50,gotoY:50,radius:8,dead:false};
 var dashLength = 100;
 var dashMax = 100;
-var enemies = [{x:300,y:300,gotoX:300,gotoY:300,radius:10},{x:310,y:310,gotoX:310,gotoY:310,radius:10}];
+var enemies = [];
 var walls = [];
-var reward = {x:20,y:20,radius:10,taken:30};
+var reward = {x:20,y:20,radius:10,taken:30, seen:false};
 var levelMap = 0;
+var map = [];
 
 var hungry = 100;
 
@@ -32,25 +33,36 @@ function imageFrom(filename) {
 
 function createLevel() {
 	
-	var rawmap = new Array(hormap);
-	for (var x = 0; x < hormap; x++) {
-		rawmap[x] = new Array(vertmap);
-		for (var y = 0; y < vertmap; y++) {
-			rawmap[x][y] = Math.round( randomBetween(0,1) );
-		}
-	}
-	
-	var map = new Array(hormap);
+	map = new Array(hormap);
 	for (var x = 0; x < hormap; x++) {
 		map[x] = new Array(vertmap);
 		for (var y = 0; y < vertmap; y++) {
-			if (x == 0 || y == 0 || x == hormap-1 || y == vertmap-1) {map[x][y] = 1; continue;}
-			var count = rawmap[x+1][y]+rawmap[x-1][y]+rawmap[x][y+1]+rawmap[x][y-1] +
-					rawmap[x+1][y+1]+rawmap[x-1][y-1]+rawmap[x-1][y+1]+rawmap[x+1][y-1];
-			if ( count < 4 ) map[x][y] = 0;
-			if ( count > 5 ) map[x][y] = 1;
-			if ( count == 4 || count == 5 ) map[x][y] = rawmap[x][y];
+			map[x][y] = 1;
 		}
+	}
+	var drunkX = Math.round(randomBetween(1,hormap-1));
+	var drunkY = Math.round(randomBetween(1,vertmap-1));
+	player.x = (drunkX+0.5)*gridsz; player.y = (drunkY+0.5)*gridsz;
+	player.gotoX = (drunkX+0.5)*gridsz; player.gotoY = (drunkY+0.5)*gridsz;
+	map[drunkX][drunkY] = 0;
+	var amountOfMapWalkable = 1;
+	while(true) {
+		if (randomDouble () < 0.5) drunkX += Math.round (randomDouble () ) * 2 - 1;
+		else drunkY += Math.round (randomDouble () ) * 2 - 1;
+		if ( drunkX <= 0 ) drunkX+=1; if ( drunkX >= hormap-1 ) drunkX-=1;
+		if ( drunkY <= 0 ) drunkY+=1; if ( drunkY >= vertmap-1 ) drunkY-=1;
+		if (map[drunkX][drunkY] == 1) {
+			map[drunkX][drunkY] = 0; amountOfMapWalkable+=1;
+			if (lengthOfLine((drunkX+0.5)*gridsz, (drunkY+0.5)*gridsz, player.x,player.y) > viewDistance * 2) {
+				if (randomDouble() < 0.02) 
+					enemies.push({x:(drunkX+0.5)*gridsz, 
+						y:(drunkY+0.5)*gridsz,
+						gotoX:(drunkX+0.5)*gridsz, 
+						gotoY:(drunkY+0.5)*gridsz,
+						radius:8});
+			}
+		}
+		if ( amountOfMapWalkable >= (hormap*vertmap)/3 ) break;
 	}
 	
 	for (var x = 0; x < hormap-1; x++) {
@@ -119,12 +131,10 @@ function update () {
 	if (! (88 in keysDown) && !player.dead) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; hungry -= 0.01 }
 	if (hungry < 0) hungry = 0;
 	if (dashLength > dashMax) dashLength = dashMax;
-	var playerNotSeen = true;
 	if (! (88 in keysDown)) {
 		for ( var i = 0; i < enemies.length; i++ ) {
 			var enemySpeed = 1;
 			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance-player.radius && !player.dead) {
-				playerNotSeen = false;
 				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
 			}
 			var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
@@ -182,8 +192,11 @@ function render () {
 	}
 	deployChanges("source-over", 0.5);
 	
-	fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
-	drawCircle(reward.x,reward.y,reward.radius, "green");
+	if (noWallCollisions({x1:player.x,y1:player.y,x2:reward.x,y2:reward.y})) { reward.seen = true; }
+	if (reward.seen) {
+		fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
+		drawCircle(reward.x,reward.y,reward.radius, "green");
+	}
 	fillCircle(player.gotoX, player.gotoY, player.radius, "lightblue");
 	drawCircle(player.x,player.y,dashLength, "blue");
 	fillCircle(player.x, player.y, player.radius, "blue");
