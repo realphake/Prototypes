@@ -19,6 +19,8 @@ var vertmap = 31;
 var gridsz=16;
 var viewDistance = 100;
 
+var directions = [{x:0,y:1},{x:1,y:0},{x:0,y:-1},{x:-1,y:0}, {x:1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:-1,y:1}];
+
 var march = 0;
 
 createLevel();
@@ -44,9 +46,10 @@ function createLevel() {
 	player.gotoX = (drunkX)*gridsz; player.gotoY = (drunkY)*gridsz;
 	map[drunkX][drunkY] = 0;
 	var amountOfMapWalkable = 1;
-	while(true) {
-		if (randomDouble () < 0.5) drunkX += Math.round (randomDouble () ) * 2 - 1;
-		else drunkY += Math.round (randomDouble () ) * 2 - 1;
+	while(true) {		
+		var drunk = directions[Math.round(randomBetween(0,7))];
+		drunkX = drunk.x; drunkY = drunk.y;
+
 		if ( drunkX <= 0 ) drunkX+=1; if ( drunkX >= hormap-1 ) drunkX-=1;
 		if ( drunkY <= 0 ) drunkY+=1; if ( drunkY >= vertmap-1 ) drunkY-=1;
 		if (map[drunkX][drunkY] == 1) {
@@ -179,9 +182,7 @@ function render () {
 	for (var x = 0; x < hormap-1; x++) {
 		for (var y = 0; y < vertmap-1; y++) {
 			var number = levelMap[x][y]*1+levelMap[x+1][y]*2+levelMap[x+1][y+1]*4+levelMap[x][y+1]*8;
-			var sy = Math.floor(number/4);
-			var sx = number - sy*4;
-			drawImage(march, x*gridsz,y*gridsz, gridsz,gridsz, sx*16,sy*16, 16,16, true);
+			drawImage(march, x*gridsz,y*gridsz, gridsz,gridsz, number*16,0, 16,16, true);
 		}
 	}
 	deployChanges("source-over", 0.5);
