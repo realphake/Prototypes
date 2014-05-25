@@ -65,7 +65,7 @@ function randomBetween (start,end) {
 }
 
 function deployChanges(compositeMethod, alpha) {
-	context.globalCompositeOperation=compositeMethod; context.globalAlpha=0.5;
+	context.globalCompositeOperation=compositeMethod; context.globalAlpha=alpha;
 	context.drawImage(tempCanvas, 0, 0);
 	context.globalCompositeOperation="source-over"; context.globalAlpha=1;
 	tempCanvas.width = tempCanvas.width; 

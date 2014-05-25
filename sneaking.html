@@ -10,8 +10,7 @@ var dashMax = 100;
 var enemies = [];
 var walls = [];
 var reward = {x:20,y:20,radius:10,taken:30, seen:false};
-var levelMap = 0;
-var map = [];
+var levelMap = [];
 
 var hungry = 100;
 
@@ -32,8 +31,7 @@ function imageFrom(filename) {
 }
 
 function createLevel() {
-	
-	map = new Array(hormap);
+	var map = new Array(hormap);
 	for (var x = 0; x < hormap; x++) {
 		map[x] = new Array(vertmap);
 		for (var y = 0; y < vertmap; y++) {
@@ -42,8 +40,8 @@ function createLevel() {
 	}
 	var drunkX = Math.round(randomBetween(1,hormap-1));
 	var drunkY = Math.round(randomBetween(1,vertmap-1));
-	player.x = (drunkX+0.5)*gridsz; player.y = (drunkY+0.5)*gridsz;
-	player.gotoX = (drunkX+0.5)*gridsz; player.gotoY = (drunkY+0.5)*gridsz;
+	player.x = (drunkX)*gridsz; player.y = (drunkY)*gridsz;
+	player.gotoX = (drunkX)*gridsz; player.gotoY = (drunkY)*gridsz;
 	map[drunkX][drunkY] = 0;
 	var amountOfMapWalkable = 1;
 	while(true) {
@@ -55,11 +53,7 @@ function createLevel() {
 			map[drunkX][drunkY] = 0; amountOfMapWalkable+=1;
 			if (lengthOfLine((drunkX+0.5)*gridsz, (drunkY+0.5)*gridsz, player.x,player.y) > viewDistance * 2) {
 				if (randomDouble() < 0.02) 
-					enemies.push({x:(drunkX+0.5)*gridsz, 
-						y:(drunkY+0.5)*gridsz,
-						gotoX:(drunkX+0.5)*gridsz, 
-						gotoY:(drunkY+0.5)*gridsz,
-						radius:8});
+					enemies.push({x:(drunkX)*gridsz, y:(drunkY)*gridsz, gotoX:(drunkX)*gridsz, gotoY:(drunkY)*gridsz, radius:8});
 			}
 		}
 		if ( amountOfMapWalkable >= (hormap*vertmap)/3 ) break;
@@ -105,7 +99,7 @@ function createLevel() {
 }
 
 function update () { 
-	deltaX = 0; deltaY = 0;
+	var deltaX = 0; var deltaY = 0;
 	if (87 in keysDown) deltaY -= 4;
 	if (83 in keysDown) deltaY += 4;
 	if (65 in keysDown) deltaX -= 4;
