@@ -22,6 +22,15 @@ tempCanvas.width = 640;
 tempCanvas.height = 480;
 var tempContext = tempCanvas.getContext('2d');
 
+function clone(obj){
+    if(obj == null || typeof(obj) != 'object')
+        return obj;
+    var temp = obj.constructor();
+    for(var key in obj)
+        temp[key] = clone(obj[key]);
+    return temp;
+}
+
 function handleMouseDown (e) {
 	mouse.isDown = true;
 	mouse.wentDownAt.x = e.pageX - canvas.offsetLeft;

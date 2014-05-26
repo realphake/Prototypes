@@ -41,6 +41,23 @@ function sameVector(a,b) {
 function createLevel() {
 	enemies = []; walls = []; levelMap = [];
 	
+	var drunk = {x:1,y:1};
+	var emptyPlaces = [clone(drunk)];
+	var start = clone(drunk); var end = clone(drunk);
+	var amountOfMapWalkable = 1;
+	var left = drunk.x; var right = drunk.x; var top = drunk.y; var bottom = drunk.y;
+	while(true) {
+		var stagger = directions[randomBetween(0,8)];
+		drunk.x += stagger.x; drunk.y += stagger.y;
+		if (drunk.x < left) left = drunk.x; if (drunk.x > right) right = drunk.x; 
+		if (drunk.y < top) top = drunk.y; if (drunk.y > bottom) bottom = drunk.y;
+		emptyPlaces.push(clone(drunk)); amountOfMapWalkable+=1;
+		if ( amountOfMapWalkable >= 50 ) {
+			end = clone(drunk); break;
+		}
+	}
+	left -= 1; top -= 1; right += 2; bottom += 2;
+	hormap = right-left; vertmap = bottom-top;
 	var map = new Array(hormap);
 	for (var x = 0; x < hormap; x++) {
 		map[x] = new Array(vertmap);
@@ -48,30 +65,11 @@ function createLevel() {
 			map[x][y] = 1;
 		}
 	}
-	var drunkX = randomBetween(1,hormap-1);
-	var drunkY = randomBetween(1,vertmap-1);
-	player.x = (drunkX)*gridsz; player.y = (drunkY)*gridsz;
-	player.gotoX = (drunkX)*gridsz; player.gotoY = (drunkY)*gridsz;
-	map[drunkX][drunkY] = 0;
-	var amountOfMapWalkable = 1;
-	while(true) {		
-		var drunk = directions[randomBetween(0,8)];
-		drunkX += drunk.x; drunkY += drunk.y;
-		if ( drunkX <= 0 ) drunkX+=1; if ( drunkX >= hormap-1 ) drunkX-=1;
-		if ( drunkY <= 0 ) drunkY+=1; if ( drunkY >= vertmap-1 ) drunkY-=1;
-		if (map[drunkX][drunkY] == 1) {
-			map[drunkX][drunkY] = 0; amountOfMapWalkable+=1;
-			if (lengthOfLine((drunkX+0.5)*gridsz, (drunkY+0.5)*gridsz, player.x,player.y) > viewDistance * 2) {
-				if (Math.random() < 0.01) 
-					enemies.push({x:(drunkX)*gridsz, y:(drunkY)*gridsz, gotoX:(drunkX)*gridsz, gotoY:(drunkY)*gridsz, radius:8});
-			}
-		}
-		if ( amountOfMapWalkable >= (hormap*vertmap)/2 ) { 
-			reward.x = (drunkX)*gridsz; reward.y = (drunkY)*gridsz; 
-			reward.taken = 30; reward.seen = false;
-			break; 
-		}
+	for ( var p = 0; p < emptyPlaces.length; p++ ) {
+		map[emptyPlaces[p].x-left][emptyPlaces[p].y-top] = 0;
 	}
+	reward.x = (end.x-left)*gridsz; reward.y = (end.y-top)*gridsz; reward.taken = 30; reward.seen = false;
+	player.x = (start.x-left)*gridsz; player.y = (start.y-top)*gridsz; player.gotoX = (start.x-left)*gridsz; player.gotoY = (start.y-top)*gridsz;
 	
 	levelMap = map;
 	
