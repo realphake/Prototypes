@@ -32,12 +32,6 @@ function imageFrom(filename) {
 	return result;
 }
 
-function sameVector(a,b) {
-	if ( a.x != b.x) return false;
-	if ( a.y != b.y) return false;
-	return true;
-}
-
 function createLevel() {
 	enemies = []; walls = []; levelMap = [];
 	
@@ -51,8 +45,10 @@ function createLevel() {
 		drunk.x += stagger.x; drunk.y += stagger.y;
 		if (drunk.x < left) left = drunk.x; if (drunk.x > right) right = drunk.x; 
 		if (drunk.y < top) top = drunk.y; if (drunk.y > bottom) bottom = drunk.y;
-		emptyPlaces.push(clone(drunk)); amountOfMapWalkable+=1;
-		if ( amountOfMapWalkable >= 50 ) {
+		if ( !containsObject( emptyPlaces, drunk ) ) {
+			emptyPlaces.push(clone(drunk)); amountOfMapWalkable+=1;
+		}
+		if ( amountOfMapWalkable >= 300 ) {
 			end = clone(drunk); break;
 		}
 	}
@@ -172,8 +168,9 @@ function update () {
 	}
 }
 
-function render () { 
+function render () {
 	clear();
+	var viewX = 320-player.x; var viewY = 240-player.y;
 	fillBox(0,0,640,480,"black");
 	for ( var i = 0; i < enemies.length; i++ ) {
 		fillBox(0,0,640,480,"black", true);

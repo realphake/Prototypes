@@ -30,6 +30,20 @@ function clone(obj){
         temp[key] = clone(obj[key]);
     return temp;
 }
+function same(obj1,obj2){
+    if(obj1 == obj2) return true;
+    for(var key in obj1)
+        if (obj2[key] != obj1[key]) return false;
+	for(var key in obj2)
+        if (obj2[key] != obj1[key]) return false;
+    return true;
+}
+
+function containsObject(list, obj) {
+	for (var elmt in list )
+		if ( same( list[elmt], obj ) ) return true;
+	return false;
+}
 
 function handleMouseDown (e) {
 	mouse.isDown = true;
