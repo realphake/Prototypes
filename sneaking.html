@@ -170,17 +170,17 @@ function update () {
 
 function render () {
 	clear();
-	var viewX = 320-player.x; var viewY = 240-player.y;
+	var viewX = Math.round(320-player.x); var viewY = Math.round(240-player.y);
 	fillBox(0,0,640,480,"black");
 	for ( var i = 0; i < enemies.length; i++ ) {
 		fillBox(0,0,640,480,"black", true);
 		tempContext.globalCompositeOperation="destination-out";
-		fillCircle(enemies[i].x,enemies[i].y,viewDistance,"black", true);
+		fillCircle(enemies[i].x+viewX,enemies[i].y+viewY,viewDistance,"black", true);
 		tempContext.globalCompositeOperation="source-over";
 		for ( var j = 0; j < walls.length; j++ ) {
 			if (lengthOfLine(walls[j].x1, walls[j].y1, enemies[i].x, enemies[i].y) < viewDistance ||
 					lengthOfLine(walls[j].x2, walls[j].y2, enemies[i].x, enemies[i].y) < viewDistance)
-				drawShadow(enemies[i].x, enemies[i].y, walls[j].x1, walls[j].y1, walls[j].x2, walls[j].y2);
+				drawShadow(enemies[i].x+viewX, enemies[i].y+viewY, walls[j].x1+viewX, walls[j].y1+viewY, walls[j].x2+viewX, walls[j].y2+viewY);
 		}
 		deployChanges("source-in",1);
 	}
@@ -188,25 +188,25 @@ function render () {
 	for (var x = 0; x < hormap-1; x++) {
 		for (var y = 0; y < vertmap-1; y++) {
 			var number = levelMap[x][y]*1+levelMap[x+1][y]*2+levelMap[x+1][y+1]*4+levelMap[x][y+1]*8;
-			drawImage(march, x*gridsz,y*gridsz, gridsz,gridsz, number*16,0, 16,16, true);
+			drawImage(march, x*gridsz+viewX,y*gridsz+viewY, gridsz,gridsz, number*16,0, 16,16, true);
 		}
 	}
 	deployChanges("source-over", 0.5);
 	
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:reward.x,y2:reward.y})) { reward.seen = true; }
 	if (reward.seen) {
-		fillCircle(reward.x,reward.y,reward.radius, "lightgreen");
-		drawCircle(reward.x,reward.y,reward.radius, "green");
+		fillCircle(reward.x+viewX,reward.y+viewY,reward.radius, "lightgreen");
+		drawCircle(reward.x+viewX,reward.y+viewY,reward.radius, "green");
 	}
-	fillCircle(player.gotoX, player.gotoY, player.radius, "lightblue");
-	drawCircle(player.x,player.y,dashLength, "blue");
-	fillCircle(player.x, player.y, player.radius, "blue");
+	fillCircle(player.gotoX+viewX, player.gotoY+viewY, player.radius, "lightblue");
+	drawCircle(player.x+viewX,player.y+viewY,dashLength, "blue");
+	fillCircle(player.x+viewX, player.y+viewY, player.radius, "blue");
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
-	drawLine(player.x,player.y,player.gotoX,player.gotoY, color);
+	drawLine(player.x+viewX,player.y+viewY,player.gotoX+viewX,player.gotoY+viewY, color);
 	for ( var i = 0; i < enemies.length; i++ ) {
-		fillCircle(enemies[i].x, enemies[i].y, enemies[i].radius, "red");
+		fillCircle(enemies[i].x+viewX, enemies[i].y+viewY, enemies[i].radius, "red");
 	}
 	
 	fillBox(5,5,6.30*hungry,5,"orange");
