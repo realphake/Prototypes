@@ -9,7 +9,7 @@ var dashLength = 100;
 var dashMax = 100;
 var enemies = [];
 var walls = [];
-var reward = {x:20,y:20,radius:10,taken:30, seen:false};
+var reward = {x:20,y:20,radius:12,taken:30, seen:false};
 var levelMap = [];
 
 var hungry = 100;
@@ -32,7 +32,15 @@ function imageFrom(filename) {
 	return result;
 }
 
+function sameVector(a,b) {
+	if ( a.x != b.x) return false;
+	if ( a.y != b.y) return false;
+	return true;
+}
+
 function createLevel() {
+	enemies = []; walls = []; levelMap = [];
+	
 	var map = new Array(hormap);
 	for (var x = 0; x < hormap; x++) {
 		map[x] = new Array(vertmap);
@@ -54,12 +62,18 @@ function createLevel() {
 		if (map[drunkX][drunkY] == 1) {
 			map[drunkX][drunkY] = 0; amountOfMapWalkable+=1;
 			if (lengthOfLine((drunkX+0.5)*gridsz, (drunkY+0.5)*gridsz, player.x,player.y) > viewDistance * 2) {
-				if (Math.random() < 0.02) 
+				if (Math.random() < 0.01) 
 					enemies.push({x:(drunkX)*gridsz, y:(drunkY)*gridsz, gotoX:(drunkX)*gridsz, gotoY:(drunkY)*gridsz, radius:8});
 			}
 		}
-		if ( amountOfMapWalkable >= (hormap*vertmap)/2 ) break;
+		if ( amountOfMapWalkable >= (hormap*vertmap)/2 ) { 
+			reward.x = (drunkX)*gridsz; reward.y = (drunkY)*gridsz; 
+			reward.taken = 30; reward.seen = false;
+			break; 
+		}
 	}
+	
+	levelMap = map;
 	
 	for (var x = 0; x < hormap-1; x++) {
 		for (var y = 0; y < vertmap-1; y++) {
@@ -94,8 +108,6 @@ function createLevel() {
 		}
 	}
 	
-	levelMap = map;
-	
 	march = imageFrom("marchingsquares.png");
 
 }
@@ -115,7 +127,7 @@ function update () {
 		player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
 	}
 	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius+player.radius && ! (88 in keysDown) && !player.dead ) {
-		if (reward.taken < 0) { reward.taken = 30; reward.x = randomBetween(0,640); reward.y = randomBetween(0,480); } 
+		if (reward.taken < 0) { reward.taken = 30; createLevel(); } 
 		else { reward.taken -= 1; }
 	}
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) && !player.dead ) {
