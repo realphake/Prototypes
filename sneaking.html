@@ -4,24 +4,29 @@
 <script src="genericFunctions.js"></script>
 <script>
 
-var player = {x:50,y:50,gotoX:50,gotoY:50,radius:8,dead:false};
-var dashLength = 100;
-var dashMax = 100;
+var player = {x:0,y:0,gotoX:0,gotoY:0,radius:8,dead:false};
 var enemies = [];
 var walls = [];
-var reward = {x:20,y:20,radius:12,taken:30, seen:false};
+var reward = {x:0,y:0,radius:12,taken:0, seen:false};
 var levelMap = [];
-
+var hormap = 0;
+var vertmap = 0;
+var directions = [{x:0,y:1},{x:1,y:0},{x:0,y:-1},{x:-1,y:0}, {x:1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:-1,y:1}];
+var march = 0;
 var hungry = 100;
 
-var hormap = 41;
-var vertmap = 31;
-var gridsz=16;
+// The following variables influence game balance:
+var gridsz = 16;
 var viewDistance = 100;
-
-var directions = [{x:0,y:1},{x:1,y:0},{x:0,y:-1},{x:-1,y:0}, {x:1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:-1,y:1}];
-
-var march = 0;
+var mazeSize = 300;
+var dashLength = 100;
+var dashMax = 100;
+var rewardTakenDefault = 30;
+var playerSpeed = 4;
+var dashRegen = 0.5;
+var hungerSpeed = 0.01;
+var enemyWalk = 1;
+var enemyRun = 5;
 
 createLevel();
 
@@ -35,7 +40,7 @@ function imageFrom(filename) {
 function createLevel() {
 	enemies = []; walls = []; levelMap = [];
 	
-	var drunk = {x:1,y:1};
+	var drunk = {x:0,y:0};
 	var emptyPlaces = [clone(drunk)];
 	var start = clone(drunk); var end = clone(drunk);
 	var amountOfMapWalkable = 1;
@@ -48,7 +53,7 @@ function createLevel() {
 		if ( !containsObject( emptyPlaces, drunk ) ) {
 			emptyPlaces.push(clone(drunk)); amountOfMapWalkable+=1;
 		}
-		if ( amountOfMapWalkable >= 300 ) {
+		if ( amountOfMapWalkable >= mazeSize ) {
 			end = clone(drunk); break;
 		}
 	}
@@ -64,7 +69,7 @@ function createLevel() {
 	for ( var p = 0; p < emptyPlaces.length; p++ ) {
 		map[emptyPlaces[p].x-left][emptyPlaces[p].y-top] = 0;
 	}
-	reward.x = (end.x-left)*gridsz; reward.y = (end.y-top)*gridsz; reward.taken = 30; reward.seen = false;
+	reward.x = (end.x-left)*gridsz; reward.y = (end.y-top)*gridsz; reward.taken = rewardTakenDefault; reward.seen = false;
 	player.x = (start.x-left)*gridsz; player.y = (start.y-top)*gridsz; player.gotoX = (start.x-left)*gridsz; player.gotoY = (start.y-top)*gridsz;
 	
 	levelMap = map;
@@ -108,36 +113,36 @@ function createLevel() {
 
 function update () { 
 	var deltaX = 0; var deltaY = 0;
-	if (87 in keysDown) deltaY -= 4;
-	if (83 in keysDown) deltaY += 4;
-	if (65 in keysDown) deltaX -= 4;
-	if (68 in keysDown) deltaX += 4;
-	if (38 in keysDown) deltaY -= 4;
-	if (40 in keysDown) deltaY += 4;
-	if (37 in keysDown) deltaX -= 4;
-	if (39 in keysDown) deltaX += 4;
-	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= 0.70710678118; deltaY *= 0.70710678118;}
+	if (87 in keysDown) deltaY -= playerSpeed;
+	if (83 in keysDown) deltaY += playerSpeed;
+	if (65 in keysDown) deltaX -= playerSpeed;
+	if (68 in keysDown) deltaX += playerSpeed;
+	if (38 in keysDown) deltaY -= playerSpeed;
+	if (40 in keysDown) deltaY += playerSpeed;
+	if (37 in keysDown) deltaX -= playerSpeed;
+	if (39 in keysDown) deltaX += playerSpeed;
+	if ( deltaX != 0 && deltaY != 0 ) { deltaX *= Math.cos(Math.PI/4); deltaY *= Math.sin(Math.PI/4);}
 	if ( lengthOfLine( player.x, player.y, player.gotoX + deltaX, player.gotoY + deltaY ) <= dashLength && !player.dead ) {
 		player.gotoY = player.gotoY + deltaY; player.gotoX = player.gotoX + deltaX;
 	}
 	if (lengthOfLine(player.x, player.y, reward.x, reward.y) < reward.radius+player.radius && ! (88 in keysDown) && !player.dead ) {
-		if (reward.taken < 0) { reward.taken = 30; createLevel(); } 
+		if (reward.taken < 0) { reward.taken = rewardTakenDefault; createLevel(); } 
 		else { reward.taken -= 1; }
 	}
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) && !player.dead ) {
 		var movedThisTic = lengthOfLine(player.x, player.y, player.gotoX, player.gotoY );
 		dashLength -= movedThisTic;
 		player.x = player.gotoX; player.y = player.gotoY;
-		dashLength += Math.min(movedThisTic,4-0.25);
+		dashLength += Math.min(movedThisTic,playerSpeed-dashRegen);
 	}
-	if (! (88 in keysDown) && !player.dead) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=0.25; hungry -= 0.01 }
+	if (! (88 in keysDown) && !player.dead) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=dashRegen; hungry -= hungerSpeed; }
 	if (hungry < 0) hungry = 0;
 	if (dashLength > dashMax) dashLength = dashMax;
 	if (! (88 in keysDown)) {
 		for ( var i = 0; i < enemies.length; i++ ) {
-			var enemySpeed = 1;
+			var enemySpeed = enemyWalk;
 			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance-player.radius && !player.dead) {
-				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = 5;
+				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = enemyRun;
 			}
 			var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
 			if ( journeyLength > enemySpeed ) {
@@ -220,8 +225,8 @@ function render () {
 function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle1 = angleOfLine( wallX1,wallY1,lightX,lightY);
 	var angle2 = angleOfLine( wallX2,wallY2,lightX,lightY);
-	var line1 = lineFrom(wallX1,wallY1,1000,angle1);
-	var line2 = lineFrom(wallX2,wallY2,1000,angle2);
+	var line1 = lineFrom(wallX1,wallY1,viewDistance,angle1);
+	var line2 = lineFrom(wallX2,wallY2,viewDistance,angle2);
 	fillQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);
 	drawQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);	
 }
