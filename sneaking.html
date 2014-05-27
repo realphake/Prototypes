@@ -5,9 +5,10 @@
 <script>
 
 var player = {x:0,y:0,gotoX:0,gotoY:0,radius:8,dead:false};
+var stairsUp = {x:0,y:0,radius:8};
 var enemies = [];
 var walls = [];
-var reward = {x:0,y:0,radius:12,taken:0, seen:false};
+var reward = {x:0,y:0,radius:8,taken:0, seen:false};
 var levelMap = [];
 var hormap = 0;
 var vertmap = 0;
@@ -71,6 +72,7 @@ function createLevel() {
 	}
 	reward.x = (end.x-left)*gridsz; reward.y = (end.y-top)*gridsz; reward.taken = rewardTakenDefault; reward.seen = false;
 	player.x = (start.x-left)*gridsz; player.y = (start.y-top)*gridsz; player.gotoX = (start.x-left)*gridsz; player.gotoY = (start.y-top)*gridsz;
+	stairsUp.x = (start.x-left)*gridsz; stairsUp.y = (start.y-top)*gridsz;
 	
 	levelMap = map;
 	
@@ -200,19 +202,22 @@ function render () {
 	
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:reward.x,y2:reward.y})) { reward.seen = true; }
 	if (reward.seen) {
-		fillCircle(reward.x+viewX,reward.y+viewY,reward.radius, "lightgreen");
-		drawCircle(reward.x+viewX,reward.y+viewY,reward.radius, "green");
+		drawImage(march, (reward.x+viewX)-reward.radius,(reward.y+viewY)-reward.radius, gridsz,gridsz, 18*16,0, 16,16);
 	}
-	fillCircle(player.gotoX+viewX, player.gotoY+viewY, player.radius, "lightblue");
-	drawCircle(player.x+viewX,player.y+viewY,dashLength, "blue");
-	fillCircle(player.x+viewX, player.y+viewY, player.radius, "blue");
+	drawImage(march, (stairsUp.x+viewX)-stairsUp.radius,(stairsUp.y+viewY)-stairsUp.radius, gridsz,gridsz, 19*16,0, 16,16);
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
 	drawLine(player.x+viewX,player.y+viewY,player.gotoX+viewX,player.gotoY+viewY, color);
 	for ( var i = 0; i < enemies.length; i++ ) {
+		drawImage(march, (enemies[i].x+viewX)-enemies[i].radius,(enemies[i].y+viewY)-enemies[i].radius, gridsz,gridsz, 17*16,0, 16,16);
 		fillCircle(enemies[i].x+viewX, enemies[i].y+viewY, enemies[i].radius, "red");
 	}
+	context.globalAlpha = 0.5;
+	drawImage(march, Math.round(player.gotoX+viewX)-player.radius,Math.round(player.gotoY+viewY)-player.radius, gridsz,gridsz, 16*16,0, 16,16);
+	context.globalAlpha = 1;
+	drawCircle(player.x+viewX,player.y+viewY,dashLength, "lightblue");
+	drawImage(march, Math.round(player.x+viewX)-player.radius,Math.round(player.y+viewY)-player.radius, gridsz,gridsz, 16*16,0, 16,16);
 	
 	fillBox(5,5,6.30*hungry,5,"orange");
 	if (player.dead) {
