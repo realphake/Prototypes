@@ -7,6 +7,7 @@
 var player = {x:0,y:0,gotoX:0,gotoY:0,radius:8,dead:false};
 var stairsUp = {x:0,y:0,radius:8};
 var enemies = [];
+var waypoints = [];
 var walls = [];
 var reward = {x:0,y:0,radius:8,taken:0, seen:false};
 var levelMap = [];
@@ -39,7 +40,9 @@ function imageFrom(filename) {
 }
 
 function createLevel() {
-	enemies = []; walls = []; levelMap = [];
+	enemies = []; walls = []; levelMap = []; waypoints = [];
+	
+	enemies.push({x:300,y:300,gotoX:300,gotoY:300,radius:10});
 	
 	var drunk = {x:0,y:0};
 	var emptyPlaces = [clone(drunk)];
@@ -69,6 +72,7 @@ function createLevel() {
 	}
 	for ( var p = 0; p < emptyPlaces.length; p++ ) {
 		map[emptyPlaces[p].x-left][emptyPlaces[p].y-top] = 0;
+		waypoints.push ( {x:(emptyPlaces[p].x-left)*gridsz, y:(emptyPlaces[p].y-top)*gridsz} );
 	}
 	reward.x = (end.x-left)*gridsz; reward.y = (end.y-top)*gridsz; reward.taken = rewardTakenDefault; reward.seen = false;
 	player.x = (start.x-left)*gridsz; player.y = (start.y-top)*gridsz; player.gotoX = (start.x-left)*gridsz; player.gotoY = (start.y-top)*gridsz;
@@ -143,7 +147,7 @@ function update () {
 	if (! (88 in keysDown)) {
 		for ( var i = 0; i < enemies.length; i++ ) {
 			var enemySpeed = enemyWalk;
-			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance-player.radius && !player.dead) {
+			if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:player.x,y2:player.y}) && lengthOfLine(enemies[i].x,enemies[i].y,player.x,player.y) < viewDistance+player.radius && !player.dead) {
 				enemies[i].gotoX = player.x; enemies[i].gotoY = player.y; enemySpeed = enemyRun;
 			}
 			var journeyLength = lengthOfLine(enemies[i].x,enemies[i].y,enemies[i].gotoX,enemies[i].gotoY);
@@ -211,7 +215,6 @@ function render () {
 	drawLine(player.x+viewX,player.y+viewY,player.gotoX+viewX,player.gotoY+viewY, color);
 	for ( var i = 0; i < enemies.length; i++ ) {
 		drawImage(march, (enemies[i].x+viewX)-enemies[i].radius,(enemies[i].y+viewY)-enemies[i].radius, gridsz,gridsz, 17*16,0, 16,16);
-		fillCircle(enemies[i].x+viewX, enemies[i].y+viewY, enemies[i].radius, "red");
 	}
 	context.globalAlpha = 0.5;
 	drawImage(march, Math.round(player.gotoX+viewX)-player.radius,Math.round(player.gotoY+viewY)-player.radius, gridsz,gridsz, 16*16,0, 16,16);
