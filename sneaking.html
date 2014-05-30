@@ -4,23 +4,10 @@
 <script src="genericFunctions.js"></script>
 <script>
 
-var player = {x:0,y:0,gotoX:0,gotoY:0,radius:8,dead:false};
-var stairsUp = {x:0,y:0,radius:8};
-var enemies = [];
-var waypoints = [];
-var walls = [];
-var reward = {x:0,y:0,radius:8,taken:0, seen:false};
-var levelMap = [];
-var hormap = 0;
-var vertmap = 0;
-var directions = [{x:0,y:1},{x:1,y:0},{x:0,y:-1},{x:-1,y:0}, {x:1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:-1,y:1}];
-var march = 0;
-var hungry = 100;
-
 // The following variables influence game balance:
 var gridsz = 16;
 var viewDistance = 100;
-var mazeSize = 300;
+var mazeSize = 150;
 var dashLength = 100;
 var dashMax = 100;
 var rewardTakenDefault = 30;
@@ -29,6 +16,24 @@ var dashRegen = 0.5;
 var hungerSpeed = 0.01;
 var enemyWalk = 1;
 var enemyRun = 5;
+var enemiesPerLevel = 2;
+var characterRadius = 8;
+// That was them.
+
+var player = {x:0,y:0,gotoX:0,gotoY:0,radius:characterRadius,dead:false};
+var stairsUp = {x:0,y:0,radius:characterRadius};
+var enemies = [];
+var waypoints = [];
+var walls = [];
+var reward = {x:0,y:0,radius:characterRadius,taken:0, seen:false};
+var levelMap = [];
+var hormap = 0;
+var vertmap = 0;
+var directions = [{x:0,y:1},{x:1,y:0},{x:0,y:-1},{x:-1,y:0}, {x:1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:-1,y:1}];
+var march = 0;
+var hungry = 100;
+
+
 
 createLevel();
 
@@ -41,8 +46,6 @@ function imageFrom(filename) {
 
 function createLevel() {
 	enemies = []; walls = []; levelMap = []; waypoints = [];
-	
-	enemies.push({x:300,y:300,gotoX:300,gotoY:300,radius:10});
 	
 	var drunk = {x:0,y:0};
 	var emptyPlaces = [clone(drunk)];
@@ -78,7 +81,19 @@ function createLevel() {
 	player.x = (start.x-left)*gridsz; player.y = (start.y-top)*gridsz; player.gotoX = (start.x-left)*gridsz; player.gotoY = (start.y-top)*gridsz;
 	stairsUp.x = (start.x-left)*gridsz; stairsUp.y = (start.y-top)*gridsz;
 	
-	levelMap = map;
+	for ( var e = 0; e < enemiesPerLevel; e++ ) {
+		while ( true ) {
+			var rX = randomBetween(0,hormap); var rY = randomBetween(0,vertmap);
+			if ( lengthOfLine( rX, rY, start.x, start.y ) > viewDistance/gridsz && map[rX][rY] == 0 ) {
+				enemies.push({x:rX*gridsz,y:rY*gridsz, gotoX:rX*gridsz,gotoY:rY*gridsz,
+							  route:[{x:rX*gridsz+10,y:rY*gridsz+10},{x:rX*gridsz+10,y:rY*gridsz-10},{x:rX*gridsz,y:rY*gridsz}],
+							  currentlyMovingTo: 0,
+							  radius:characterRadius});
+							  
+				break;
+			}
+		}
+	}
 	
 	for (var x = 0; x < hormap-1; x++) {
 		for (var y = 0; y < vertmap-1; y++) {
@@ -113,6 +128,7 @@ function createLevel() {
 		}
 	}
 	
+	levelMap = map;
 	march = imageFrom("marchingsquares.png");
 
 }
@@ -157,7 +173,7 @@ function update () {
 				enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
 				enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
 			} else {
-				// find a new destination
+				/*// find a new destination
 				var newX = randomBetween(0,640);
 				var newY = randomBetween(0,480);
 				while(true) {
@@ -168,7 +184,9 @@ function update () {
 						var newY = randomBetween(0,480);
 					}
 				}
-				enemies[i].gotoX = newX; enemies[i].gotoY = newY;
+				enemies[i].gotoX = newX; enemies[i].gotoY = newY;*/
+				var path = breadthFirstSearch(enemies[i], whatsUpNext(enemies[i]));
+				enemies[i].gotoX = path[1].x; enemies[i].gotoY = path[1].y;
 			}
 		}
 	}
@@ -177,6 +195,11 @@ function update () {
 			player.dead = true;
 		}
 	}
+}
+
+function whatsUpNext( enemy ) {
+	enemy.currentlyMovingTo += 1; if (enemy.currentlyMovingTo >= enemy.route.length) enemy.currentlyMovingTo = 0;
+	return [enemy.route[enemy.currentlyMovingTo]];
 }
 
 function render () {
@@ -229,6 +252,50 @@ function render () {
 	}
 	
 }
+
+
+
+
+
+
+
+function breadthFirstSearch(root, goals) {
+	var queue = [[root]];
+	while( queue.length != 0 ) {
+		var node = queue.shift();
+		if ( isOneOf(lastElementOf(node), goals) ) return node;
+		var children = childrenOfWayPoint(lastElementOf(node), goals);
+		for (var i = 0; i < children.length; i++) {
+			var newNode = Object.create(node);
+			newNode.push(children[i]);
+			queue.push( newNode );
+		}
+	}
+	return [{x:0,y:0},{x:0,y:0}]; // should never be reached
+}
+
+function lastElementOf(array) { return array[array.length-1]; }
+
+function isOneOf( loc, setOfLocs ) {
+	for (var i = 0; i < setOfLocs.length; i++)
+		if ( setOfLocs[i].x == loc.x && setOfLocs[i].y == loc.y ) return true;
+	return false;
+}
+
+function childrenOfWayPoint(mother, goals) {
+	var children = [];
+	for ( var i = 0; i < waypoints.length; i++ )
+		if ( noWallCollisions({x1:mother.x, y1:mother.y, x2:waypoints[i].x, y2:waypoints[i].y}) ) children.push(waypoints[i]);
+	for ( var i = 0; i < goals.length; i++ )
+		if ( noWallCollisions({x1:mother.x, y1:mother.y, x2:goals[i].x, y2:goals[i].y}) ) children.push(goals[i]);
+	return children;
+}
+
+
+
+
+
+
 
 function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle1 = angleOfLine( wallX1,wallY1,lightX,lightY);
