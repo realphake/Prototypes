@@ -173,18 +173,6 @@ function update () {
 				enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
 				enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
 			} else {
-				/*// find a new destination
-				var newX = randomBetween(0,640);
-				var newY = randomBetween(0,480);
-				while(true) {
-					// Keep trying new places until we find one we can get to.
-					if (noWallCollisions({x1:enemies[i].x,y1:enemies[i].y,x2:newX,y2:newY})) break;
-					else {
-						var newX = randomBetween(0,640);
-						var newY = randomBetween(0,480);
-					}
-				}
-				enemies[i].gotoX = newX; enemies[i].gotoY = newY;*/
 				var path = breadthFirstSearch(enemies[i], whatsUpNext(enemies[i]));
 				enemies[i].gotoX = path[1].x; enemies[i].gotoY = path[1].y;
 			}
@@ -253,12 +241,6 @@ function render () {
 	
 }
 
-
-
-
-
-
-
 function breadthFirstSearch(root, goals) {
 	var queue = [[root]];
 	while( queue.length != 0 ) {
@@ -290,12 +272,6 @@ function childrenOfWayPoint(mother, goals) {
 		if ( noWallCollisions({x1:mother.x, y1:mother.y, x2:goals[i].x, y2:goals[i].y}) ) children.push(goals[i]);
 	return children;
 }
-
-
-
-
-
-
 
 function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle1 = angleOfLine( wallX1,wallY1,lightX,lightY);
