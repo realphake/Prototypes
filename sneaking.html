@@ -5,9 +5,9 @@
 <script>
 
 // The following variables influence game balance:
-var gridsz = 16;
+var gridsz = 32;
 var viewDistance = 100;
-var mazeSize = 150;
+var mazeSize = 100;
 var dashLength = 100;
 var dashMax = 100;
 var rewardTakenDefault = 30;
@@ -84,12 +84,10 @@ function createLevel() {
 	for ( var e = 0; e < enemiesPerLevel; e++ ) {
 		while ( true ) {
 			var rX = randomBetween(0,hormap); var rY = randomBetween(0,vertmap);
-			if ( lengthOfLine( rX, rY, start.x, start.y ) > viewDistance/gridsz && map[rX][rY] == 0 ) {
+			if ( lengthOfLine( rX, rY, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz && map[rX][rY] == 0 ) {
 				enemies.push({x:rX*gridsz,y:rY*gridsz, gotoX:rX*gridsz,gotoY:rY*gridsz,
-							  route:[{x:rX*gridsz+10,y:rY*gridsz+10},{x:rX*gridsz+10,y:rY*gridsz-10},{x:rX*gridsz,y:rY*gridsz}],
-							  currentlyMovingTo: 0,
-							  radius:characterRadius});
-							  
+							  route:[{x:rX*gridsz,y:rY*gridsz},{x:rX*gridsz+2,y:rY*gridsz+2}],
+							  currentlyMovingTo:0, radius:characterRadius});
 				break;
 			}
 		}
@@ -266,10 +264,11 @@ function isOneOf( loc, setOfLocs ) {
 
 function childrenOfWayPoint(mother, goals) {
 	var children = [];
-	for ( var i = 0; i < waypoints.length; i++ )
-		if ( noWallCollisions({x1:mother.x, y1:mother.y, x2:waypoints[i].x, y2:waypoints[i].y}) ) children.push(waypoints[i]);
 	for ( var i = 0; i < goals.length; i++ )
 		if ( noWallCollisions({x1:mother.x, y1:mother.y, x2:goals[i].x, y2:goals[i].y}) ) children.push(goals[i]);
+	if ( children.length > 0 ) return children;
+	for ( var i = 0; i < waypoints.length; i++ )
+		if ( noWallCollisions({x1:mother.x, y1:mother.y, x2:waypoints[i].x, y2:waypoints[i].y}) ) children.push(waypoints[i]);
 	return children;
 }
 
