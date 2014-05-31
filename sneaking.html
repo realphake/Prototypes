@@ -33,8 +33,6 @@ var directions = [{x:0,y:1},{x:1,y:0},{x:0,y:-1},{x:-1,y:0}, {x:1,y:1},{x:-1,y:-
 var march = 0;
 var hungry = 100;
 
-
-
 createLevel();
 
 function imageFrom(filename) {
@@ -85,8 +83,19 @@ function createLevel() {
 		while ( true ) {
 			var rX = randomBetween(0,hormap); var rY = randomBetween(0,vertmap);
 			if ( lengthOfLine( rX, rY, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz && map[rX][rY] == 0 ) {
+				var rX2; var rY2; var rX3; var rY3; 
+				while ( true ) { var rX2 = randomBetween(0,hormap); var rY2 = randomBetween(0,vertmap);
+					if ( lengthOfLine( rX2, rY2, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz && 
+							lengthOfLine( rX2, rY2, rX, rX ) < 2 &&
+							map[rX2][rY2] == 0 ) break;
+				}
+				while ( true ) { var rX3 = randomBetween(0,hormap); var rY3 = randomBetween(0,vertmap);
+					if ( lengthOfLine( rX3, rY3, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz &&
+							lengthOfLine( rX3, rY3, rX2, rX2 ) < 2 &&
+							map[rX3][rY3] == 0 ) break;
+				}
 				enemies.push({x:rX*gridsz,y:rY*gridsz, gotoX:rX*gridsz,gotoY:rY*gridsz,
-							  route:[{x:rX*gridsz,y:rY*gridsz},{x:rX*gridsz+2,y:rY*gridsz+2}],
+							  route:[{x:rX*gridsz,y:rY*gridsz},{x:rX2*gridsz,y:rY2*gridsz},{x:rX3*gridsz,y:rY3*gridsz}],
 							  currentlyMovingTo:0, radius:characterRadius});
 				break;
 			}
@@ -215,21 +224,21 @@ function render () {
 	
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:reward.x,y2:reward.y})) { reward.seen = true; }
 	if (reward.seen) {
-		drawImage(march, (reward.x+viewX)-reward.radius,(reward.y+viewY)-reward.radius, gridsz,gridsz, 18*16,0, 16,16);
+		drawImage(march, (reward.x+viewX)-reward.radius,(reward.y+viewY)-reward.radius, characterRadius*2,characterRadius*2, 18*16,0, 16,16);
 	}
-	drawImage(march, (stairsUp.x+viewX)-stairsUp.radius,(stairsUp.y+viewY)-stairsUp.radius, gridsz,gridsz, 19*16,0, 16,16);
+	drawImage(march, (stairsUp.x+viewX)-stairsUp.radius,(stairsUp.y+viewY)-stairsUp.radius, characterRadius*2,characterRadius*2, 19*16,0, 16,16);
 	var color = "black";
 	if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 	else color = "red";
 	drawLine(player.x+viewX,player.y+viewY,player.gotoX+viewX,player.gotoY+viewY, color);
 	for ( var i = 0; i < enemies.length; i++ ) {
-		drawImage(march, (enemies[i].x+viewX)-enemies[i].radius,(enemies[i].y+viewY)-enemies[i].radius, gridsz,gridsz, 17*16,0, 16,16);
+		drawImage(march, (enemies[i].x+viewX)-enemies[i].radius,(enemies[i].y+viewY)-enemies[i].radius, characterRadius*2,characterRadius*2, 17*16,0, 16,16);
 	}
 	context.globalAlpha = 0.5;
-	drawImage(march, Math.round(player.gotoX+viewX)-player.radius,Math.round(player.gotoY+viewY)-player.radius, gridsz,gridsz, 16*16,0, 16,16);
+	drawImage(march, Math.round(player.gotoX+viewX)-player.radius,Math.round(player.gotoY+viewY)-player.radius, characterRadius*2,characterRadius*2, 16*16,0, 16,16);
 	context.globalAlpha = 1;
 	drawCircle(player.x+viewX,player.y+viewY,dashLength, "lightblue");
-	drawImage(march, Math.round(player.x+viewX)-player.radius,Math.round(player.y+viewY)-player.radius, gridsz,gridsz, 16*16,0, 16,16);
+	drawImage(march, Math.round(player.x+viewX)-player.radius,Math.round(player.y+viewY)-player.radius, characterRadius*2,characterRadius*2, 16*16,0, 16,16);
 	
 	fillBox(5,5,6.30*hungry,5,"orange");
 	if (player.dead) {
