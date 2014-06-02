@@ -15,7 +15,7 @@ var playerSpeed = 4;
 var dashRegen = 0.5;
 var hungerSpeed = 0.01;
 var enemyWalk = 1;
-var enemyRun = 5;
+var enemyRun = 4;
 var enemiesPerLevel = 2;
 var characterRadius = 8;
 // That was them.
@@ -80,27 +80,6 @@ function createLevel() {
 	player.x = (start.x-left)*gridsz; player.y = (start.y-top)*gridsz; player.gotoX = (start.x-left)*gridsz; player.gotoY = (start.y-top)*gridsz;
 	stairsUp.x = (start.x-left)*gridsz; stairsUp.y = (start.y-top)*gridsz;
 	
-	for ( var e = 0; e < enemiesPerLevel; e++ ) {
-		while ( true ) {
-			var rX = randomBetween(0,hormap); var rY = randomBetween(0,vertmap);
-			if ( lengthOfLine( rX, rY, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz && map[rX][rY] == 0 ) {
-				var rX2; var rY2; var rX3; var rY3; 
-				while ( true ) { var rX2 = randomBetween(0,hormap); var rY2 = randomBetween(0,vertmap);
-					if ( lengthOfLine( rX2, rY2, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz && 
-							map[rX2][rY2] == 0 ) break;
-				}
-				while ( true ) { var rX3 = randomBetween(0,hormap); var rY3 = randomBetween(0,vertmap);
-					if ( lengthOfLine( rX3, rY3, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz &&
-							map[rX3][rY3] == 0 ) break;
-				}
-				enemies.push({x:rX*gridsz,y:rY*gridsz, gotoX:rX*gridsz,gotoY:rY*gridsz,
-							  route:[{x:rX*gridsz,y:rY*gridsz},{x:rX2*gridsz,y:rY2*gridsz},{x:rX3*gridsz,y:rY3*gridsz}],
-							  currentlyMovingTo:0, radius:characterRadius});
-				break;
-			}
-		}
-	}
-	
 	for (var x = 0; x < hormap-1; x++) {
 		for (var y = 0; y < vertmap-1; y++) {
 			var totalWalkable = map[x][y] + map[x+1][y+1] + map[x+1][y] + map[x][y+1];
@@ -133,6 +112,24 @@ function createLevel() {
 			}
 		}
 	}
+	
+	for ( var e = 0; e < enemiesPerLevel; e++ ) {
+		var rX, rY, rX2, rY2;
+		while ( true ) {
+			rX = randomBetween(0,hormap); rY = randomBetween(0,vertmap);
+			if ( lengthOfLine( rX, rY, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz && map[rX][rY] == 0 ) break;
+		}
+		while ( true ) { 
+			rX2 = randomBetween(0,hormap); rY2 = randomBetween(0,vertmap);
+			if ( lengthOfLine( rX2, rY2, start.x-left, start.y-top ) > (viewDistance+characterRadius)/gridsz && 
+					noWallCollisions( {x1:rX*gridsz,y1:rY*gridsz,x2:rX2*gridsz,y2:rY2*gridsz} ) && map[rX2][rY2] == 0 ) break;
+		}
+		enemies.push({x:rX*gridsz,y:rY*gridsz, gotoX:rX2*gridsz,gotoY:rY2*gridsz,
+					  route:[{x:rX*gridsz,y:rY*gridsz},{x:rX2*gridsz,y:rY2*gridsz}],
+					  currentlyMovingTo:0, radius:characterRadius});
+	}
+	
+	console.log(enemies);
 	
 	levelMap = map;
 	march = imageFrom("marchingsquares.png");
@@ -180,8 +177,8 @@ function update () {
 					enemies[i].x += (enemies[i].gotoX - enemies[i].x) * partOfLine;
 					enemies[i].y += (enemies[i].gotoY - enemies[i].y) * partOfLine;
 				} else {
-					var path = breadthFirstSearch(enemies[i], whatsUpNext(enemies[i]));
-					enemies[i].gotoX = path[1].x; enemies[i].gotoY = path[1].y;
+					var path = whatsUpNext(enemies[i]);
+					enemies[i].gotoX = path.x; enemies[i].gotoY = path.y;
 				}
 			}
 		}
@@ -195,7 +192,16 @@ function update () {
 
 function whatsUpNext( enemy ) {
 	enemy.currentlyMovingTo += 1; if (enemy.currentlyMovingTo >= enemy.route.length) enemy.currentlyMovingTo = 0;
-	return [enemy.route[enemy.currentlyMovingTo]];
+	if ( !noWallCollisions( { x1:enemy.route[enemy.currentlyMovingTo].x,y1:enemy.route[enemy.currentlyMovingTo].y, x2:enemy.x,y2:enemy.y } ) ) {
+		var rX, rY;
+		while ( true ) { 
+			rX = randomBetween(0,hormap); rY = randomBetween(0,vertmap);
+			if ( noWallCollisions( {x1:rX*gridsz,y1:rY*gridsz,x2:enemy.x,y2:enemy.y} ) && levelMap[rX][rY] == 0 ) break;
+		}
+		enemy.route[enemy.currentlyMovingTo] = {x:rX*gridsz, y:rY*gridsz};
+		enemy.route[1-enemy.currentlyMovingTo] = {x:enemy.x, y:enemy.y}; 
+	}
+	return enemy.route[enemy.currentlyMovingTo];
 }
 
 function render () {
