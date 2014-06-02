@@ -33,6 +33,7 @@ var directions = [{x:0,y:1},{x:1,y:0},{x:0,y:-1},{x:-1,y:0}, {x:1,y:1},{x:-1,y:-
 var march = 0;
 var hungry = 100;
 var loaded = false;
+var currentLevel = 0;
 
 createLevel();
 
@@ -44,7 +45,7 @@ function imageFrom(filename) {
 }
 
 function createLevel() {
-	enemies = []; walls = []; levelMap = []; waypoints = [];
+	enemies = []; walls = []; levelMap = []; waypoints = []; currentLevel += 1;
 	
 	var drunk = {x:0,y:0};
 	var emptyPlaces = [clone(drunk)];
@@ -252,6 +253,7 @@ function render () {
 		if (player.dead) {
 			context.globalAlpha = 0.3;fillBox(0,0,640,480,"red");context.globalAlpha = 1;
 			writeText("You have died!",320,240, "red");
+			writeText("You got to level "+currentLevel+"!",320,250, "red");
 		}
 	} else {
 		writeText("The game is loading!",320,240, "blue");
