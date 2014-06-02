@@ -5,21 +5,22 @@
 <script>
 
 // The following variables influence game balance:
-var gridsz = 32;
-var viewDistance = 100;
-var mazeSize = 100;
-var dashLength = 100;
-var dashMax = 100;
-var rewardTakenDefault = 30;
+var gridsz = 48;
+var viewDistance = 150;
+var mazeSize = 80;
+var dashMax = 200;
+var hungerRegen = 7;
+var rewardTakenDefault = 35;
 var playerSpeed = 4;
-var dashRegen = 0.5;
-var hungerSpeed = 0.01;
+var dashRegen = 0.8;
+var hungerSpeed = 0.04;
 var enemyWalk = 1;
 var enemyRun = 4;
-var enemiesPerLevel = 2;
+var enemiesPerLevel = 1;
 var characterRadius = 8;
 // That was them.
 
+var dashLength = dashMax;
 var player = {x:0,y:0,gotoX:0,gotoY:0,radius:characterRadius,dead:false};
 var stairsUp = {x:0,y:0,radius:characterRadius};
 var enemies = [];
@@ -45,7 +46,8 @@ function imageFrom(filename) {
 }
 
 function createLevel() {
-	enemies = []; walls = []; levelMap = []; waypoints = []; currentLevel += 1;
+	enemies = []; walls = []; levelMap = []; waypoints = []; currentLevel += 1; hungry += hungerRegen; if ( hungry > 100 ) hungry = 100;
+	if (currentLevel % 2 != 1) { enemiesPerLevel+=1; mazeSize += 20; }
 	
 	var drunk = {x:0,y:0};
 	var emptyPlaces = [clone(drunk)];
@@ -156,11 +158,12 @@ function update () {
 			if (reward.taken < 0) { reward.taken = rewardTakenDefault; createLevel(); } 
 			else { reward.taken -= 1; }
 		}
+		if (lengthOfLine(player.x, player.y, reward.x, reward.y) >= reward.radius+player.radius ) reward.taken = rewardTakenDefault;
 		if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY}) && ! (88 in keysDown) && !player.dead ) {
 			var movedThisTic = lengthOfLine(player.x, player.y, player.gotoX, player.gotoY );
 			dashLength -= movedThisTic;
 			player.x = player.gotoX; player.y = player.gotoY;
-			dashLength += Math.min(movedThisTic,playerSpeed-dashRegen);
+			dashLength += Math.min(movedThisTic,playerSpeed-(dashRegen*3/4));
 		}
 		if (! (88 in keysDown) && !player.dead) {player.gotoX = player.x;player.gotoY = player.y;dashLength+=dashRegen; hungry -= hungerSpeed; }
 		if (hungry < 0) hungry = 0;
@@ -226,28 +229,28 @@ function render () {
 		for (var x = 0; x < hormap-1; x++) {
 			for (var y = 0; y < vertmap-1; y++) {
 				var number = levelMap[x][y]*1+levelMap[x+1][y]*2+levelMap[x+1][y+1]*4+levelMap[x][y+1]*8;
-				drawImage(march, x*gridsz+viewX,y*gridsz+viewY, gridsz,gridsz, number*16,0, 16,16, true);
+				drawImage(march, x*gridsz+viewX,y*gridsz+viewY, gridsz,gridsz, number*48,0, 48,48, true);
 			}
 		}
 		deployChanges("source-over", 0.5);
 		
 		if (noWallCollisions({x1:player.x,y1:player.y,x2:reward.x,y2:reward.y})) { reward.seen = true; }
 		if (reward.seen) {
-			drawImage(march, (reward.x+viewX)-reward.radius,(reward.y+viewY)-reward.radius, characterRadius*2,characterRadius*2, 18*16,0, 16,16);
+			drawImage(march, (reward.x+viewX)-reward.radius,(reward.y+viewY)-reward.radius, characterRadius*2,characterRadius*2, 18*48,0, 48,48);
 		}
-		drawImage(march, (stairsUp.x+viewX)-stairsUp.radius,(stairsUp.y+viewY)-stairsUp.radius, characterRadius*2,characterRadius*2, 19*16,0, 16,16);
+		drawImage(march, (stairsUp.x+viewX)-stairsUp.radius,(stairsUp.y+viewY)-stairsUp.radius, characterRadius*2,characterRadius*2, 19*48,0, 48,48);
 		var color = "black";
 		if (noWallCollisions({x1:player.x,y1:player.y,x2:player.gotoX,y2:player.gotoY})) color = "lightblue";
 		else color = "red";
 		drawLine(player.x+viewX,player.y+viewY,player.gotoX+viewX,player.gotoY+viewY, color);
 		for ( var i = 0; i < enemies.length; i++ ) {
-			drawImage(march, (enemies[i].x+viewX)-enemies[i].radius,(enemies[i].y+viewY)-enemies[i].radius, characterRadius*2,characterRadius*2, 17*16,0, 16,16);
+			drawImage(march, Math.round(enemies[i].x+viewX)-enemies[i].radius,Math.round(enemies[i].y+viewY)-enemies[i].radius, characterRadius*2,characterRadius*2, 17*48,0, 48,48);
 		}
 		context.globalAlpha = 0.5;
-		drawImage(march, Math.round(player.gotoX+viewX)-player.radius,Math.round(player.gotoY+viewY)-player.radius, characterRadius*2,characterRadius*2, 16*16,0, 16,16);
+		drawImage(march, Math.round(player.gotoX+viewX)-player.radius,Math.round(player.gotoY+viewY)-player.radius, characterRadius*2,characterRadius*2, 16*48,0, 48,48);
 		context.globalAlpha = 1;
 		drawCircle(player.x+viewX,player.y+viewY,dashLength, "lightblue");
-		drawImage(march, Math.round(player.x+viewX)-player.radius,Math.round(player.y+viewY)-player.radius, characterRadius*2,characterRadius*2, 16*16,0, 16,16);
+		drawImage(march, Math.round(player.x+viewX)-player.radius,Math.round(player.y+viewY)-player.radius, characterRadius*2,characterRadius*2, 16*48,0, 48,48);
 		
 		fillBox(5,5,6.30*hungry,5,"orange");
 		if (player.dead) {
