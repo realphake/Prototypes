@@ -23,6 +23,8 @@ tempCanvas.width = 640;
 tempCanvas.height = 480;
 var tempContext = tempCanvas.getContext('2d');
 
+var currentContext = context;
+
 function clone(obj){
     if(obj == null || typeof(obj) != 'object')
         return obj;
@@ -73,66 +75,63 @@ function randomBetween (start,end) {
 	return Math.floor((Math.random() * end) + start);
 }
 
+function holdChanges() {
+	currentContext = tempContext;
+}
+
 function deployChanges(compositeMethod, alpha) {
 	context.globalCompositeOperation=compositeMethod; context.globalAlpha=alpha;
 	context.drawImage(tempCanvas, 0, 0);
 	context.globalCompositeOperation="source-over"; context.globalAlpha=1;
 	tempCanvas.width = tempCanvas.width; 
+	currentContext = context;
 }
 
-function drawImage(march, x,y, horsize,vertsize, cropx,cropy, crophor,cropvert, wait) {
-	var c = context; if (wait) c = tempContext;
-	c.drawImage(march, cropx,cropy,crophor,cropvert, x,y, horsize,vertsize);
+function drawImage(march, x,y, horsize,vertsize, cropx,cropy, crophor,cropvert) {
+	currentContext.drawImage(march, cropx,cropy,crophor,cropvert, x,y, horsize,vertsize);
 }
 
 function clear () {
 	canvas.width = canvas.width; 
 }
 
-function fillBox (x,y,w,h,color,wait) {
-	var c = context; if (wait) c = tempContext;
-	c.fillStyle = color; c.fillRect(x,y,w,h); c.fillStyle = "black";
+function fillBox (x,y,w,h,color) {
+	currentContext.fillStyle = color; currentContext.fillRect(x,y,w,h); currentContext.fillStyle = "black";
 }
 
-function drawCircle(x,y,r,color,wait) {
-	var c = context; if (wait) c = tempContext;
-	c.beginPath(); c.arc(x,y,r,0,2*Math.PI);
-	c.strokeStyle = color; c.stroke(); c.strokeStyle = "black";
+function drawCircle(x,y,r,color) {
+	currentContext.beginPath(); currentContext.arc(x,y,r,0,2*Math.PI);
+	currentContext.strokeStyle = color; currentContext.stroke(); currentContext.strokeStyle = "black";
 }
 
-function fillQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color, wait) {
-	var c = context; if (wait) c = tempContext;
-	c.beginPath(); c.moveTo(x11,y11); c.lineTo(x12,y12); c.lineTo(x22,y22); c.lineTo(x21,y21); c.lineTo(x11,y11);
-	c.fillStyle = color; c.fill(); c.fillStyle = "black";
+function fillQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color) {
+	currentContext.beginPath(); currentContext.moveTo(x11,y11); currentContext.lineTo(x12,y12); currentContext.lineTo(x22,y22); currentContext.lineTo(x21,y21); currentContext.lineTo(x11,y11);
+	currentContext.fillStyle = color; currentContext.fill(); currentContext.fillStyle = "black";
 }
 
-function drawQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color, wait) {
-	var c = context; if (wait) c = tempContext;
-	c.beginPath(); c.moveTo(x11,y11); c.lineTo(x12,y12); c.lineTo(x22,y22); c.lineTo(x21,y21); c.lineTo(x11,y11);
-	c.strokeStyle = color; c.stroke(); c.strokeStyle = "black";
+function drawQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color) {
+	currentContext.beginPath(); currentContext.moveTo(x11,y11); currentContext.lineTo(x12,y12); currentContext.lineTo(x22,y22); currentContext.lineTo(x21,y21); currentContext.lineTo(x11,y11);
+	currentContext.strokeStyle = color; currentContext.stroke(); currentContext.strokeStyle = "black";
 }
 
-function fillCircle(x,y,r,color,wait) {
-	var c = context; if (wait) c = tempContext;
-	c.beginPath(); c.arc(x,y,r,0,2*Math.PI);
-	c.fillStyle = color; c.fill(); c.fillStyle = "black";
+function fillCircle(x,y,r,color) {
+	currentContext.beginPath(); currentContext.arc(x,y,r,0,2*Math.PI);
+	currentContext.fillStyle = color; currentContext.fill(); currentContext.fillStyle = "black";
 }
 
-function writeText(text,x,y, color,wait) {
-	var c = context; if (wait) c = tempContext;
-	c.fillStyle = color;
-	c.fillText(text,x,y);
-	c.fillStyle = "black"; 
+function writeText(text,x,y, color) {
+	currentContext.fillStyle = color;
+	currentContext.fillText(text,x,y);
+	currentContext.fillStyle = "black"; 
 }
 
-function drawLine(x1,y1,x2,y2, color,wait) {
-	var c = context; if (wait) c = tempContext;
-	c.beginPath();
-	c.strokeStyle = color;
-	c.moveTo(x1,y1);
-	c.lineTo(x2,y2); 
-	c.stroke();
-	c.strokeStyle = "black";
+function drawLine(x1,y1,x2,y2, color) {
+	currentContext.beginPath();
+	currentContext.strokeStyle = color;
+	currentContext.moveTo(x1,y1);
+	currentContext.lineTo(x2,y2); 
+	currentContext.stroke();
+	currentContext.strokeStyle = "black";
 }
 
 function checkLineIntersection(line1, line2) {

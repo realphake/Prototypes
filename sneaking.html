@@ -214,9 +214,10 @@ function render () {
 		var viewX = Math.round(320-player.x); var viewY = Math.round(240-player.y);
 		fillBox(0,0,640,480,"black");
 		for ( var i = 0; i < enemies.length; i++ ) {
-			fillBox(0,0,640,480,"black", true);
+			holdChanges();
+			fillBox(0,0,640,480,"black");
 			tempContext.globalCompositeOperation="destination-out";
-			fillCircle(enemies[i].x+viewX,enemies[i].y+viewY,viewDistance,"black", true);
+			fillCircle(enemies[i].x+viewX,enemies[i].y+viewY,viewDistance,"black");
 			tempContext.globalCompositeOperation="source-over";
 			for ( var j = 0; j < walls.length; j++ ) {
 				if (lengthOfLine(walls[j].x1, walls[j].y1, enemies[i].x, enemies[i].y) < viewDistance ||
@@ -226,10 +227,11 @@ function render () {
 			deployChanges("source-in",1);
 		}
 		
+		holdChanges();
 		for (var x = 0; x < hormap-1; x++) {
 			for (var y = 0; y < vertmap-1; y++) {
 				var number = levelMap[x][y]*1+levelMap[x+1][y]*2+levelMap[x+1][y+1]*4+levelMap[x][y+1]*8;
-				drawImage(march, x*gridsz+viewX,y*gridsz+viewY, gridsz,gridsz, number*48,0, 48,48, true);
+				drawImage(march, x*gridsz+viewX,y*gridsz+viewY, gridsz,gridsz, number*48,0, 48,48);
 			}
 		}
 		deployChanges("source-over", 0.5);
@@ -301,8 +303,8 @@ function drawShadow(lightX, lightY, wallX1, wallY1, wallX2, wallY2) {
 	var angle2 = angleOfLine( wallX2,wallY2,lightX,lightY);
 	var line1 = lineFrom(wallX1,wallY1,viewDistance,angle1);
 	var line2 = lineFrom(wallX2,wallY2,viewDistance,angle2);
-	fillQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);
-	drawQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black", true);	
+	fillQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black");
+	drawQuadrilateral(line1.x1,line1.y1,line1.x2,line1.y2,line2.x2,line2.y2,line2.x1,line2.y1, "black");	
 }
 
 function noWallCollisions(line) {
