@@ -25,6 +25,22 @@ var tempContext = tempCanvas.getContext('2d');
 
 var currentContext = context;
 
+function keyIsDown (key) {
+	return key in keysDown;
+}
+
+function mouseIsDown () {
+	return mouse.isDown;
+}
+
+function mouseIsNowAt () {
+	return mouse.isNowAt;
+}
+
+function mouseWentDownAt () {
+	return mouse.wentDownAt;
+}
+
 function clone(obj){
     if(obj == null || typeof(obj) != 'object')
         return obj;
@@ -33,6 +49,7 @@ function clone(obj){
         temp[key] = clone(obj[key]);
     return temp;
 }
+
 function same(obj1,obj2){
     if(obj1 == obj2) return true;
     for(var key in obj1)

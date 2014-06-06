@@ -4,24 +4,38 @@
 	<script src="genericFunctions.js"></script>
 	<script>
 	
+	// Moddable variables.
 	var ppi = 100;
+	// That was all of them.
+	
 	var chars = [];
+	var selected = -1;
 	
 	function setup () {
 		chars.push ( {x:4, y:4, diameter:1, speed:6} ) ;
+		chars.push ( {x:4, y:3, diameter:1, speed:6} ) ;
 	}
 	
 	function update () { 
-		// Game logic goes here.
+		selected = -1;
+		if (mouseIsDown () ) {
+			selected = mouseWentDownAt () ;
+			for (ch in chars) {
+				if (lengthOfLine (selected.x, selected.y, chars[ch].x*ppi, chars[ch].y*ppi) < ppi*chars[ch].diameter/2)
+					selected = ch;
+			}
+		}
 	}
 	
 	function render () { 
 		for (ch in chars) {
-			drawCircle (ppi*chars[ch].x, ppi*chars[ch].y, ppi*chars[ch].diameter/2, 'green') ;
+			var color = 'green'; if (ch == selected) color = 'lightgreen';
+			drawCircle (ppi*chars[ch].x, ppi*chars[ch].y, ppi*chars[ch].diameter/2, color) ;
 		}
 	}
 	
-	setup(); setInterval(function () { update(); render(); }, 20);
+	setup () ; 
+	setInterval (function () { update () ; render () ;} , 20) ;
 
 	</script>
 
