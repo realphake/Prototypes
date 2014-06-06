@@ -4,8 +4,11 @@
 	<script src="genericFunctions.js"></script>
 	<script>
 	
+	var ppi = 100;
+	var chars = [];
+	
 	function setup () {
-		// Initialize the game here.
+		chars.push ( {x:4, y:4, diameter:1, speed:6} ) ;
 	}
 	
 	function update () { 
@@ -13,7 +16,9 @@
 	}
 	
 	function render () { 
-		// Graphics code goes here.
+		for (ch in chars) {
+			drawCircle (ppi*chars[ch].x, ppi*chars[ch].y, ppi*chars[ch].diameter/2, 'green') ;
+		}
 	}
 	
 	setup(); setInterval(function () { update(); render(); }, 20);
