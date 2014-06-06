@@ -9,28 +9,38 @@
 	// That was all of them.
 	
 	var chars = [];
-	var selected = -1;
+	var selected = -1; var gotoX = 0; var gotoY = 0;
 	
 	function setup () {
-		chars.push ( {x:4, y:4, diameter:1, speed:6} ) ;
-		chars.push ( {x:4, y:3, diameter:1, speed:6} ) ;
+		chars.push ( {x:4, y:4, diameter:1, reach:2, speed:6} ) ;
+		chars.push ( {x:4, y:3, diameter:1, reach:2, speed:6} ) ;
 	}
 	
-	function update () { 
-		selected = -1;
+	function update () {
 		if (mouseIsDown () ) {
-			selected = mouseWentDownAt () ;
+			mouseSelection = mouseWentDownAt () ;
 			for (ch in chars) {
-				if (lengthOfLine (selected.x, selected.y, chars[ch].x*ppi, chars[ch].y*ppi) < ppi*chars[ch].diameter/2)
-					selected = ch;
+				if (lengthOfLine (mouseSelection.x, mouseSelection.y, chars[ch].x*ppi, chars[ch].y*ppi) < ppi*chars[ch].diameter/2) {
+					selected = ch; gotoX = mouseIsNowAt().x/ppi; gotoY = mouseIsNowAt().y/ppi;
+				}
+			}
+		} else {
+			if (selected != -1) {
+				chars[selected].x = gotoX; chars[selected].y = gotoY;
 			}
 		}
 	}
 	
 	function render () { 
+		clear();
 		for (ch in chars) {
 			var color = 'green'; if (ch == selected) color = 'lightgreen';
-			drawCircle (ppi*chars[ch].x, ppi*chars[ch].y, ppi*chars[ch].diameter/2, color) ;
+			fillCircle (ppi*chars[ch].x, ppi*chars[ch].y, ppi*chars[ch].diameter/2, color) ;
+			if (ch == selected && mouseIsDown () ) {
+				mouseIsNowAt () ;
+				drawLine (ppi*chars[ch].x, ppi*chars[ch].y,mouseIsNowAt () .x, mouseIsNowAt () .y, "lightgreen") ;
+				fillCircle (mouseIsNowAt().x, mouseIsNowAt().y, ppi*chars[ch].diameter/2, "lightgreen") ;
+			}
 		}
 	}
 	
