@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+	<script src="genericFunctions.js"></script>
+	<script>
+	
+	var player = {x:20, y:20, width:10, height:20} ;
+	var ground = [{x1:0,y1:470,x2:640,y2:470}];
+	
+	function setup () {
+		// Initialize the game here.
+	}
+	
+	function update () { 
+		if (keyIsDown ('up') ) player.y -= 2;
+		if (keyIsDown ('down') ) player.y += 2;
+		if (keyIsDown ('left') ) player.x -= 2;
+		if (keyIsDown ('right') ) player.x += 2;
+	}
+	
+	function render () { 
+		clear();
+		drawBox (player.x, player.y, player.width, player.height, 'blue') ;
+		for (var i = 0; i < ground.length; i++) {
+			drawLine (ground[i].x1, ground[i].y1, ground[i].x2, ground[i].y2, 'green') ;
+		}
+	}
+	
+	setup(); setInterval (function () {update () ; render () ;}, 20) ;
+
+	</script>
+
+</body>
+</html>

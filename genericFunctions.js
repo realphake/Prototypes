@@ -26,6 +26,16 @@ var tempContext = tempCanvas.getContext('2d');
 var currentContext = context;
 
 function keyIsDown (key) {
+	if (key == 'up') key = 38;
+	else if (key == 'down') key = 40;
+	else if (key == 'left') key = 37;
+	else if (key == 'right') key = 39;
+	else if (key == 'w') key = 87;
+	else if (key == 's') key = 83;
+	else if (key == 'a') key = 65;
+	else if (key == 'd') key = 68;
+	else if (key == 'z') key = 90;
+	else if (key == 'x') key = 88;
 	return key in keysDown;
 }
 
@@ -110,6 +120,10 @@ function drawImage(march, x,y, horsize,vertsize, cropx,cropy, crophor,cropvert) 
 
 function clear () {
 	canvas.width = canvas.width; 
+}
+
+function drawBox (x,y,w,h,color) {
+	currentContext.strokeStyle = color; currentContext.rect(x,y,w,h); currentContext.stroke(); currentContext.strokeStyle = "black";
 }
 
 function fillBox (x,y,w,h,color) {
