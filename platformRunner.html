@@ -20,11 +20,10 @@
 			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.height &&
 					player.x+player.width > ground[i].x1 && player.x < ground[i].x2)
 				groundHeight = ground[i].y;
-		if (player.y+player.height+player.fall+2 < groundHeight) {
-			player.fall += 2; player.y += player.fall;
-		} else {
-			player.y = groundHeight - player.height; player.fall = 0;
-		}
+		if (player.y+player.height+player.fall+2 < groundHeight) {player.fall += 2; player.y += player.fall;}
+		else {player.y = groundHeight-player.height; player.fall = 0;}
+		//Jumping
+		if (groundHeight == player.y+player.height && keyIsDown('z') ) player.fall = -10;
 	}
 	
 	function render () { 
