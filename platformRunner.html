@@ -5,24 +5,30 @@
 	<script>
 	
 	var player = {x:20, y:20, width:10, height:20} ;
-	var ground = [{x1:0,y1:470,x2:640,y2:470}];
+	var ground = [{x1:0,x2:640,y:470}];
 	
 	function setup () {
 		// Initialize the game here.
 	}
 	
 	function update () { 
-		if (keyIsDown ('up') ) player.y -= 2;
-		if (keyIsDown ('down') ) player.y += 2;
 		if (keyIsDown ('left') ) player.x -= 2;
 		if (keyIsDown ('right') ) player.x += 2;
+		// Falling
+		var groundHeight = 640;
+		for (var i = 0; i < ground.length; i++)
+			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.height &&
+					player.x+player.width > ground[i].x1 && player.x < ground[i].x2)
+				groundHeight = ground[i].y;
+		player.y = groundHeight - player.height;
+		
 	}
 	
 	function render () { 
 		clear();
 		drawBox (player.x, player.y, player.width, player.height, 'blue') ;
 		for (var i = 0; i < ground.length; i++) {
-			drawLine (ground[i].x1, ground[i].y1, ground[i].x2, ground[i].y2, 'green') ;
+			drawLine (ground[i].x1, ground[i].y, ground[i].x2, ground[i].y, 'green') ;
 		}
 	}
 	
