@@ -5,7 +5,7 @@
 	<script>
 	
 	var player = {x:20, y:20, width:10, height:20} ;
-	var ground = [{x1:0,x2:640,y:470}];
+	var ground = [{x1:0,x2:640,y:470}, {x1:70,x2:100,y:400}, {x1:10,x2:80,y:300}];
 	
 	function setup () {
 		// Initialize the game here.
@@ -15,7 +15,7 @@
 		if (keyIsDown ('left') ) player.x -= 2;
 		if (keyIsDown ('right') ) player.x += 2;
 		// Falling
-		var groundHeight = 640;
+		var groundHeight = 480;
 		for (var i = 0; i < ground.length; i++)
 			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.height &&
 					player.x+player.width > ground[i].x1 && player.x < ground[i].x2)
