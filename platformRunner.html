@@ -4,6 +4,12 @@
 	<script src="genericFunctions.js"></script>
 	<script>
 	
+	// Game modding variables.
+	var walkSpeed = 2;
+	var gravity = 2;
+	var jumpHeight = 30;
+	// That was them!
+	
 	var player = {x:20, y:20, width:10, height:20, fall:0} ;
 	var ground = [{x1:0,x2:640,y:470}, {x1:70,x2:100,y:400}, {x1:10,x2:80,y:300}];
 	
@@ -12,18 +18,19 @@
 	}
 	
 	function update () { 
-		if (keyIsDown ('left') ) player.x -= 2;
-		if (keyIsDown ('right') ) player.x += 2;
+		//Walking
+		if (keyIsDown ('left') ) player.x -= walkSpeed;
+		if (keyIsDown ('right') ) player.x += walkSpeed;
 		// Falling
 		var groundHeight = 480;
 		for (var i = 0; i < ground.length; i++)
 			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.height &&
 					player.x+player.width > ground[i].x1 && player.x < ground[i].x2)
 				groundHeight = ground[i].y;
-		if (player.y+player.height+player.fall+2 < groundHeight) {player.fall += 2; player.y += player.fall;}
+		if (player.y+player.height+player.fall+gravity < groundHeight) {player.fall += gravity; player.y += player.fall;}
 		else {player.y = groundHeight-player.height; player.fall = 0;}
 		//Jumping
-		if (groundHeight == player.y+player.height && keyIsDown('z') ) player.fall = -10;
+		if (groundHeight == player.y+player.height && keyIsDown('z') ) player.fall -= jumpHeight;
 	}
 	
 	function render () { 
