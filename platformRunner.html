@@ -8,12 +8,12 @@
 	var worldSpeed = 2;
 	var walkSpeed = 2;
 	var gravity = 2;
-	var jumpHeight = 30;
+	var jumpHeight = 20;
 	// That was them!
 	
-	var player = {x:20, y:20, w:10, h:20, fall:0} ;
+	var player = {x:20, y:20, w:10, h:20, fall:0, dead:false} ;
 	var ground = [ {x:0, w:640, y:470}, {x:640, w:640, y:470}, {x:70, w:100, y:400}, {x:10, w:80, y:300} ];
-	var enemies = [ {x:640, y:240, speed:1} ]; 
+	var enemies = [ {x:640, y:400, speed:1} ]; 
 	
 	function setup () {
 		// Initialize the game here.
@@ -29,7 +29,7 @@
 			enemies[i].x -= worldSpeed-enemies[i].speed;
 			if (enemies[i].x <= 0) enemies.splice(i,1);
 		}
-		//Walking
+		// Walking
 		if (keyIsDown ('left') ) player.x -= walkSpeed;
 		if (keyIsDown ('right') ) player.x += walkSpeed;
 		// Falling
@@ -39,13 +39,19 @@
 				groundHeight = ground[i].y;
 		if (player.y+player.h+player.fall+gravity < groundHeight) {player.fall += gravity; player.y += player.fall;}
 		else {player.y = groundHeight-player.h; player.fall = 0;}
-		//Jumping
+		// Jumping
 		if (groundHeight == player.y+player.h && keyIsDown('z') ) player.fall -= jumpHeight;
+		// Enemy collision
+		for (var i = enemies.length-1; i >= 0; i--) { 
+			if (enemies[i].x > player.x && enemies[i].x < player.x+player.w && enemies[i].y > player.y && enemies[i].y < player.y+player.h )
+				player.dead = true;
+		}
 	}
 	
 	function render () { 
 		clear();
-		drawBox (player.x, player.y, player.w, player.h, 'blue') ;
+		if (player.dead) drawBox (player.x, player.y, player.w, player.h, 'red') ;
+		else drawBox (player.x, player.y, player.w, player.h, 'blue') ;
 		for (var i = 0; i < ground.length; i++)
 			drawLine (ground[i].x, ground[i].y, ground[i].x+ground[i].w, ground[i].y, 'green') ;
 		for (var i = 0; i < enemies.length; i++)
