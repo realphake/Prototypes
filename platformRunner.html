@@ -12,7 +12,7 @@
 	// That was them!
 	
 	var player = {x:20, y:20, w:10, h:20, fall:0} ;
-	var ground = [ {x:0, w:640, y:470}, {x:70, w:100, y:400}, {x:10, w:80, y:300} ];
+	var ground = [ {x:0, w:640, y:470}, {x:640, w:640, y:470}, {x:70, w:100, y:400}, {x:10, w:80, y:300} ];
 	var enemies = [ {x:640, y:240, speed:1} ]; 
 	
 	function setup () {
@@ -21,10 +21,14 @@
 	
 	function update () { 
 		// Scroll world
-		for (var i = 0; i < ground.length; i++)
+		for (var i = 0; i < ground.length; i++) { 
 			ground[i].x -= worldSpeed;
-		for (var i = 0; i < enemies.length; i++)
+			if (ground[i].x+ground[i].w <= 0) ground.splice(i,1);
+		}
+		for (var i = 0; i < enemies.length; i++) { 
 			enemies[i].x -= worldSpeed-enemies[i].speed;
+			if (enemies[i].x <= 0) enemies.splice(i,1);
+		}
 		//Walking
 		if (keyIsDown ('left') ) player.x -= walkSpeed;
 		if (keyIsDown ('right') ) player.x += walkSpeed;
