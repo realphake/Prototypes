@@ -5,40 +5,48 @@
 	<script>
 	
 	// Game modding variables.
+	var worldSpeed = 2;
 	var walkSpeed = 2;
 	var gravity = 2;
 	var jumpHeight = 30;
 	// That was them!
 	
-	var player = {x:20, y:20, width:10, height:20, fall:0} ;
-	var ground = [{x1:0,x2:640,y:470}, {x1:70,x2:100,y:400}, {x1:10,x2:80,y:300}];
+	var player = {x:20, y:20, w:10, h:20, fall:0} ;
+	var ground = [ {x:0, w:640, y:470}, {x:70, w:100, y:400}, {x:10, w:80, y:300} ];
+	var enemies = [ {x:640, y:240, speed:1} ]; 
 	
 	function setup () {
 		// Initialize the game here.
 	}
 	
 	function update () { 
+		// Scroll world
+		for (var i = 0; i < ground.length; i++)
+			ground[i].x -= worldSpeed;
+		for (var i = 0; i < enemies.length; i++)
+			enemies[i].x -= worldSpeed-enemies[i].speed;
 		//Walking
 		if (keyIsDown ('left') ) player.x -= walkSpeed;
 		if (keyIsDown ('right') ) player.x += walkSpeed;
 		// Falling
 		var groundHeight = 480;
 		for (var i = 0; i < ground.length; i++)
-			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.height &&
-					player.x+player.width > ground[i].x1 && player.x < ground[i].x2)
+			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.h &&
+					player.x+player.w > ground[i].x && player.x < ground[i].x+ground[i].w)
 				groundHeight = ground[i].y;
-		if (player.y+player.height+player.fall+gravity < groundHeight) {player.fall += gravity; player.y += player.fall;}
-		else {player.y = groundHeight-player.height; player.fall = 0;}
+		if (player.y+player.h+player.fall+gravity < groundHeight) {player.fall += gravity; player.y += player.fall;}
+		else {player.y = groundHeight-player.h; player.fall = 0;}
 		//Jumping
-		if (groundHeight == player.y+player.height && keyIsDown('z') ) player.fall -= jumpHeight;
+		if (groundHeight == player.y+player.h && keyIsDown('z') ) player.fall -= jumpHeight;
 	}
 	
 	function render () { 
 		clear();
-		drawBox (player.x, player.y, player.width, player.height, 'blue') ;
-		for (var i = 0; i < ground.length; i++) {
-			drawLine (ground[i].x1, ground[i].y, ground[i].x2, ground[i].y, 'green') ;
-		}
+		drawBox (player.x, player.y, player.w, player.h, 'blue') ;
+		for (var i = 0; i < ground.length; i++)
+			drawLine (ground[i].x, ground[i].y, ground[i].x+ground[i].w, ground[i].y, 'green') ;
+		for (var i = 0; i < enemies.length; i++)
+			drawCircle (enemies[i].x, enemies[i].y, 2, 'red') ;
 	}
 	
 	setup(); setInterval (function () {update () ; render () ;}, 20) ;
