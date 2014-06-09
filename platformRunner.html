@@ -21,11 +21,11 @@
 	
 	function update () { 
 		// Scroll world
-		for (var i = 0; i < ground.length; i++) { 
+		for (var i = ground.length-1; i >= 0; i--) { 
 			ground[i].x -= worldSpeed;
 			if (ground[i].x+ground[i].w <= 0) ground.splice(i,1);
 		}
-		for (var i = 0; i < enemies.length; i++) { 
+		for (var i = enemies.length-1; i >= 0; i--) { 
 			enemies[i].x -= worldSpeed-enemies[i].speed;
 			if (enemies[i].x <= 0) enemies.splice(i,1);
 		}
@@ -35,8 +35,7 @@
 		// Falling
 		var groundHeight = 480;
 		for (var i = 0; i < ground.length; i++)
-			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.h &&
-					player.x+player.w > ground[i].x && player.x < ground[i].x+ground[i].w)
+			if (ground[i].y < groundHeight && ground[i].y >= player.y+player.h && player.x+player.w > ground[i].x && player.x < ground[i].x+ground[i].w)
 				groundHeight = ground[i].y;
 		if (player.y+player.h+player.fall+gravity < groundHeight) {player.fall += gravity; player.y += player.fall;}
 		else {player.y = groundHeight-player.h; player.fall = 0;}
