@@ -99,7 +99,15 @@ function keyWentUp (e) {
 }
 
 function randomBetween (start,end) { 
-	return Math.floor((Math.random() * end) + start);
+	return Math.floor(Math.random() * (end-start) + start);
+}
+
+function randInt (start,end) { 
+	return Math.floor(Math.random() * (end-start) + start);
+}
+
+function randDouble (start,end) { 
+	return Math.random() * (end-start) + start;
 }
 
 function holdChanges() {
