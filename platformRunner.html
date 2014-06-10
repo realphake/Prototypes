@@ -8,7 +8,7 @@
 	var worldSpeed = 3;
 	var walkSpeed = 3;
 	var gravity = 1;
-	var jumpHeight = 20;
+	var jumpHeight = 15;
 	// That was them!
 	
 	var player = {x:20, y:20, w:10, h:20, fall:0, dead:false} ;
@@ -30,7 +30,8 @@
 			if (enemies[i].x <= 0) enemies.splice(i,1);
 		}
 		// Spawn objects
-		if (Math.random() < 0.02) ground.push( {x:640, w:640/randDouble(1,15), y:randInt(0,24)*20} );
+		if (Math.random() < 0.04) ground.push( {x:640, w:640/randDouble(1,15), y:randInt(-2,6)*20+player.y} );
+		if (Math.random() < 0.03) enemies.push( {x:640, y:randInt(0,24)*20+5, speed:randInt(1,3)} );
 		// Walking
 		if (keyIsDown ('left') ) player.x -= walkSpeed;
 		if (keyIsDown ('right') ) player.x += walkSpeed;
@@ -72,3 +73,4 @@
 
 </body>
 </html>
+
