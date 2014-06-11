@@ -5,9 +5,9 @@
 	<script>
 	
 	var player = {x:30, y:240, r:5};
-	var enemies = [{x:640, y:240, r:10}];
-	var boolitz = [{x:640, y:240, r:2, xs:-4, ys:0}];
-	var items = [{x:320, y:240, r:4}];
+	var enemies = [{x:640, y:240, r:10, age:0}];
+	var boolitz = [{x:640, y:240, r:2, xs:-3, ys:0}];
+	var items = [{x:320, y:240, r:4, age:0}];
 	
 	function setup () {
 		
@@ -21,7 +21,9 @@
 		if ( keyIsDown('right') ) player.x += 2;
 		// Enemies
 		for (e in enemies) {
-			enemies[e].x -= 2;
+			enemies[e].age += 1;
+			enemies[e].x -= 1;
+			enemies[e].y += Math.sin(enemies[e].age/20);
 		}
 		// Boolitz
 		for (b in boolitz) {
@@ -30,7 +32,9 @@
 		}
 		// Items
 		for (i in items) {
-			if ( lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r ) items[i].r = 1;
+			items[i].age += 1;
+			if ( lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r ) 
+				items[i].r = 1;
 		}
 	}
 	
