@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+	<script src="genericFunctions.js"></script>
+	<script>
+	
+	var player = {x:30, y:240, r:5};
+	var enemies = [{x:640, y:240, r:10}];
+	var boolitz = [{x:640, y:240, r:2, xs:-4, ys:0}];
+	var items = [{x:320, y:240, r:4}];
+	
+	function setup () {
+		
+	}
+	
+	function update () { 
+		// Input
+		if ( keyIsDown('up') ) player.y -= 4;
+		if ( keyIsDown('down') ) player.y += 4;
+		if ( keyIsDown('left') ) player.x -= 2;
+		if ( keyIsDown('right') ) player.x += 2;
+		// Enemies
+		for (e in enemies) {
+			enemies[e].x -= 2;
+		}
+		// Boolitz
+		for (b in boolitz) {
+			boolitz[b].x += boolitz[b].xs;
+			boolitz[b].y += boolitz[b].ys;
+		}
+		// Items
+		for (i in items) {
+			if ( lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r ) items[i].r = 1;
+		}
+	}
+	
+	function render () { 
+		clear();
+		drawCircle(player.x, player.y, player.r, "green");
+		for (e in enemies) drawCircle(enemies[e].x, enemies[e].y, enemies[e].r, "orange");
+		for (b in boolitz) drawCircle(boolitz[b].x, boolitz[b].y, boolitz[b].r, "red");
+		for (i in items) drawCircle(items[i].x, items[i].y, items[i].r, "purple");
+	}
+	
+	setup(); setInterval(function () { update(); render(); }, 20);
+
+	</script>
+
+</body>
+</html>
