@@ -8,6 +8,7 @@
 	var enemies = [{x:640, y:240, r:10, age:0}];
 	var boolitz = [{x:640, y:240, r:2, xs:-3, ys:0}];
 	var items = [{x:320, y:240, r:4, age:0}];
+	var alive = true;
 	
 	function setup () {
 		
@@ -20,27 +21,31 @@
 		if ( keyIsDown('left') ) player.x -= 2;
 		if ( keyIsDown('right') ) player.x += 2;
 		// Enemies
-		for (e in enemies) {
+		for (var e = 0; e < enemies.length; ++e) {
 			enemies[e].age += 1;
 			enemies[e].x -= 1;
 			enemies[e].y += Math.sin(enemies[e].age/20);
+			if ( lengthOfLine(enemies[e].x, enemies[e].y, player.x, player.y) < enemies[e].r+player.r ) 
+				alive = false;
 		}
 		// Boolitz
-		for (b in boolitz) {
+		for (var b = 0; b < boolitz.length; ++b) {
 			boolitz[b].x += boolitz[b].xs;
 			boolitz[b].y += boolitz[b].ys;
+			if ( lengthOfLine(boolitz[b].x, boolitz[b].y, player.x, player.y) < boolitz[b].r+player.r ) 
+				alive = false;
 		}
 		// Items
-		for (i in items) {
+		for (var i = 0; i < items.length; ++i) {
 			items[i].age += 1;
-			if ( lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r ) 
-				items[i].r = 1;
+			if ( lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r )
+				items.splice(i--, 1);
 		}
 	}
 	
 	function render () { 
 		clear();
-		drawCircle(player.x, player.y, player.r, "green");
+		if (alive) drawCircle(player.x, player.y, player.r, "green");
 		for (e in enemies) drawCircle(enemies[e].x, enemies[e].y, enemies[e].r, "orange");
 		for (b in boolitz) drawCircle(boolitz[b].x, boolitz[b].y, boolitz[b].r, "red");
 		for (i in items) drawCircle(items[i].x, items[i].y, items[i].r, "purple");
