@@ -8,6 +8,7 @@
 	var enemies = [{x:640, y:240, r:10, age:0}];
 	var boolitz = [{x:640, y:240, r:2, xs:-3, ys:0}];
 	var items = [{x:320, y:240, r:4, age:0}];
+	var effects = [{x:100, y:100, r:1, age:0}];
 	var alive = true;
 	
 	function setup () {
@@ -25,21 +26,34 @@
 			enemies[e].age += 1;
 			enemies[e].x -= 1;
 			enemies[e].y += Math.sin(enemies[e].age/20);
-			if ( lengthOfLine(enemies[e].x, enemies[e].y, player.x, player.y) < enemies[e].r+player.r ) 
+			if ( alive && lengthOfLine(enemies[e].x, enemies[e].y, player.x, player.y) < enemies[e].r+player.r ) {
+				effects.push({x:player.x, y:player.y, r:1, age:0});
 				alive = false;
+			}
 		}
 		// Boolitz
 		for (var b = 0; b < boolitz.length; ++b) {
 			boolitz[b].x += boolitz[b].xs;
 			boolitz[b].y += boolitz[b].ys;
-			if ( lengthOfLine(boolitz[b].x, boolitz[b].y, player.x, player.y) < boolitz[b].r+player.r ) 
+			if ( alive && lengthOfLine(boolitz[b].x, boolitz[b].y, player.x, player.y) < boolitz[b].r+player.r ) { 
+				effects.push({x:boolitz[b].x, y:boolitz[b].y, r:1, age:0});
 				alive = false;
+			}
 		}
 		// Items
 		for (var i = 0; i < items.length; ++i) {
 			items[i].age += 1;
-			if ( lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r )
+			if ( alive && lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r ) {
 				items.splice(i--, 1);
+			}
+		}
+		// Effects
+		for (var f = 0; f < effects.length; ++f) {
+			effects[f].age += 1;
+			effects[f].r = -Math.pow(effects[f].age-3,2)+10;
+			if (effects[f].r < 0) {
+				effects.splice(f--, 1);
+			}
 		}
 	}
 	
@@ -49,6 +63,7 @@
 		for (e in enemies) drawCircle(enemies[e].x, enemies[e].y, enemies[e].r, "orange");
 		for (b in boolitz) drawCircle(boolitz[b].x, boolitz[b].y, boolitz[b].r, "red");
 		for (i in items) drawCircle(items[i].x, items[i].y, items[i].r, "purple");
+		for (f in effects) drawCircle(effects[f].x, effects[f].y, effects[f].r, "black");
 	}
 	
 	setup(); setInterval(function () { update(); render(); }, 20);
