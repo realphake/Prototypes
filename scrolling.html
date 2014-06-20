@@ -4,46 +4,58 @@
 	<script src="genericFunctions.js"></script>
 	<script>
 	
-	var player = {x:30, y:240, r:5};
+	var player = {x:30, y:240, r:5, alive:true, ready:0};
 	var enemies = [{x:640, y:240, r:10, age:0}];
-	var boolitz = [{x:640, y:240, r:2, xs:-3, ys:0}];
+	var boolitz = [{x:600, y:240, r:2, xs:-3, ys:0}];
 	var items = [{x:320, y:240, r:4, age:0}];
 	var effects = [{x:100, y:100, r:1, age:0}];
-	var alive = true;
 	
 	function setup () {
 		
 	}
 	
 	function update () { 
-		// Input
+		// Player
 		if ( keyIsDown('up') ) player.y -= 4;
 		if ( keyIsDown('down') ) player.y += 4;
 		if ( keyIsDown('left') ) player.x -= 2;
 		if ( keyIsDown('right') ) player.x += 2;
+		if ( keyIsDown('z') ) {
+			if ( player.ready >= 0 ) {
+				player.ready = -20;
+				boolitz.push({x:player.x+player.r+2+1, y:player.y, r:2, xs:10, ys:0});
+			}
+		}
+		player.ready += 1;
 		// Enemies
 		for (var e = 0; e < enemies.length; ++e) {
 			enemies[e].age += 1;
 			enemies[e].x -= 1;
 			enemies[e].y += Math.sin(enemies[e].age/20);
-			if ( alive && lengthOfLine(enemies[e].x, enemies[e].y, player.x, player.y) < enemies[e].r+player.r ) {
+			if ( player.alive && lengthOfLine(enemies[e].x, enemies[e].y, player.x, player.y) < enemies[e].r+player.r ) {
 				effects.push({x:player.x, y:player.y, r:1, age:0});
-				alive = false;
+				player.alive = false;
 			}
 		}
 		// Boolitz
 		for (var b = 0; b < boolitz.length; ++b) {
 			boolitz[b].x += boolitz[b].xs;
 			boolitz[b].y += boolitz[b].ys;
-			if ( alive && lengthOfLine(boolitz[b].x, boolitz[b].y, player.x, player.y) < boolitz[b].r+player.r ) { 
+			if ( player.alive && lengthOfLine(boolitz[b].x, boolitz[b].y, player.x, player.y) < boolitz[b].r+player.r ) { 
 				effects.push({x:boolitz[b].x, y:boolitz[b].y, r:1, age:0});
-				alive = false;
+				player.alive = false;
+			}
+			for (var e = 0; e < enemies.length; ++e) {
+				if ( lengthOfLine(boolitz[b].x, boolitz[b].y, enemies[e].x, enemies[e].y) < boolitz[b].r+enemies[e].r ) { 
+					effects.push({x:enemies[e].x, y:enemies[e].y, r:1, age:0});
+					enemies.splice(e--, 1);
+				}
 			}
 		}
 		// Items
 		for (var i = 0; i < items.length; ++i) {
 			items[i].age += 1;
-			if ( alive && lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r ) {
+			if ( player.alive && lengthOfLine(items[i].x, items[i].y, player.x, player.y) < items[i].r+player.r ) {
 				items.splice(i--, 1);
 			}
 		}
@@ -59,7 +71,7 @@
 	
 	function render () { 
 		clear();
-		if (alive) drawCircle(player.x, player.y, player.r, "green");
+		if (player.alive) drawCircle(player.x, player.y, player.r, "green");
 		for (e in enemies) drawCircle(enemies[e].x, enemies[e].y, enemies[e].r, "orange");
 		for (b in boolitz) drawCircle(boolitz[b].x, boolitz[b].y, boolitz[b].r, "red");
 		for (i in items) drawCircle(items[i].x, items[i].y, items[i].r, "purple");

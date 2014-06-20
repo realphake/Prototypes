@@ -61,17 +61,17 @@ function update () {
 }
 function render () { 
 	clear();
-	drawText("Gold: "+Math.round(gold),20,20, "black");
-	drawText("Wood: "+Math.round(wood),20,40, "black");
-	drawText("Food: "+Math.round(food),20,60, "black");
+	writeText("Gold: "+Math.round(gold),20,20, "black");
+	writeText("Wood: "+Math.round(wood),20,40, "black");
+	writeText("Food: "+Math.round(food),20,60, "black");
 	
-	drawText("Houses: "+houses,100,20, "black");
-	drawText("Restaurants: "+restaurants,100,40, "black");
-	drawText("Lumberjacks: "+lumberjacks,100,60, "black");
+	writeText("Houses: "+houses,100,20, "black");
+	writeText("Restaurants: "+restaurants,100,40, "black");
+	writeText("Lumberjacks: "+lumberjacks,100,60, "black");
 	
-	drawText("H: build a house",200,400, "black");
-	drawText("R: build a restaurant",200,420, "black");
-	drawText("L: build a lumberjack's",200,440, "black");
+	writeText("H: build a house",200,400, "black");
+	writeText("R: build a restaurant",200,420, "black");
+	writeText("L: build a lumberjack's",200,440, "black");
 }
 
 
