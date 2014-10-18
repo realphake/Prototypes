@@ -1,23 +1,47 @@
 <!DOCTYPE html> <html lang="en"> <body>
 <script src="genericFunctions.js"></script> <script>
 
-var gameState;
+//////////////////////
+// Global Variables!
+///////////////////////
+var programState;
+var worldMap;
+var playerLocation;
 
-function updateGame() {
+///////////////////////
+// Utility functions!
+///////////////////////
+
+function tileColorByType ( tileType ) {
+	if ( tileType == 0 ) return "green";
+	if ( tileType == 1 ) return "blue";
+	if ( tileType == 2 ) return "red";
+}
+
+//////////////////////////////////
+// Important backbone functions!
+///////////////////////////////////
 	
+function updateGame() {
+	if (keyIsDown ('up')) player.y -= 1;
+	if (keyIsDown ('down')) player.y += 1;
+	if (keyIsDown ('left')) player.x -= 1;
+	if (keyIsDown ('right')) player.x += 1;
 }
 
 function renderGame() {
-var gridSize = 20;
+	var gridSize = 20;
 	for (x = 0; x < 640/gridSize; x++) {
 		for (y = 0; y < 480/gridSize; y++) {
-			drawBox (x*gridSize,y*gridSize,gridSize,gridSize,"green");
+			var tileColor = tileColorByType ( worldMap[y][x] );
+			fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
 		}
 	}
+	fillCircle(player.x*20+10,player.y*20+10,10,"black");
 }
 
 function updateMainMenu() {
-	if ( keyIsDown ("right") ) gameState = 1;
+	if ( keyIsDown ("right") ) programState = 1;
 }
 
 function renderMainMenu() {
@@ -25,21 +49,49 @@ function renderMainMenu() {
 	writeText("Press right to start.",10,30, "black");
 }
 
-// Low-end functions
+////////////////////////
+// Low-end functions!
+////////////////////////
 
 function setup () {
-	gameState = 0;
+	programState = 0;
+	player = {x:1,y:1};
+	worldMap = [
+		[1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
 }
 
 function update () { 
-	if ( gameState == 0 ) updateMainMenu();
-	else if ( gameState == 1 ) updateGame();
+	if ( programState == 0 ) updateMainMenu();
+	else if ( programState == 1 ) updateGame();
 }
 
 function render () { 
 	clear();
-	if ( gameState == 0 ) renderMainMenu();
-	else if ( gameState == 1 ) renderGame();
+	if ( programState == 0 ) renderMainMenu();
+	else if ( programState == 1 ) renderGame();
 }
 
 setup ();
