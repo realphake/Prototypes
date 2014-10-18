@@ -1,4 +1,8 @@
 
+//////////////////////////////////
+// Setup, global variables etc. //
+//////////////////////////////////
+
 var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
 var keysDown = {};
@@ -24,6 +28,10 @@ tempCanvas.height = 480;
 var tempContext = tempCanvas.getContext('2d');
 
 var currentContext = context;
+
+/////////////////////
+// Input functions //
+/////////////////////
 
 function keyIsDown (key) {
 	if (key == 'up') key = 38;
@@ -51,30 +59,6 @@ function mouseWentDownAt () {
 	return mouse.wentDownAt;
 }
 
-function clone(obj){
-    if(obj == null || typeof(obj) != 'object')
-        return obj;
-    var temp = obj.constructor();
-    for(var key in obj)
-        temp[key] = clone(obj[key]);
-    return temp;
-}
-
-function same(obj1,obj2){
-    if(obj1 == obj2) return true;
-    for(var key in obj1)
-        if (obj2[key] != obj1[key]) return false;
-	for(var key in obj2)
-        if (obj2[key] != obj1[key]) return false;
-    return true;
-}
-
-function containsObject(list, obj) {
-	for (var elmt in list )
-		if ( same( list[elmt], obj ) ) return true;
-	return false;
-}
-
 function handleMouseDown (e) {
 	mouse.isDown = true;
 	mouse.wentDownAt.x = e.pageX - canvas.offsetLeft;
@@ -98,17 +82,9 @@ function keyWentUp (e) {
 	delete keysDown[e.keyCode];
 }
 
-function randomBetween (start,end) { 
-	return Math.floor(Math.random() * (end-start) + start);
-}
-
-function randInt (start,end) { 
-	return Math.floor(Math.random() * (end-start) + start);
-}
-
-function randDouble (start,end) { 
-	return Math.random() * (end-start) + start;
-}
+////////////////////////////////////
+// Graphical, rendering functions //
+////////////////////////////////////
 
 function holdChanges() {
 	currentContext = tempContext;
@@ -171,6 +147,46 @@ function drawLine(x1,y1,x2,y2, color) {
 	currentContext.lineTo(x2,y2); 
 	currentContext.stroke();
 	currentContext.strokeStyle = "black";
+}
+
+////////////////////
+// Other, utility //
+////////////////////
+
+function clone(obj){
+    if(obj == null || typeof(obj) != 'object')
+        return obj;
+    var temp = obj.constructor();
+    for(var key in obj)
+        temp[key] = clone(obj[key]);
+    return temp;
+}
+
+function same(obj1,obj2){
+    if(obj1 == obj2) return true;
+    for(var key in obj1)
+        if (obj2[key] != obj1[key]) return false;
+	for(var key in obj2)
+        if (obj2[key] != obj1[key]) return false;
+    return true;
+}
+
+function containsObject(list, obj) {
+	for (var elmt in list )
+		if ( same( list[elmt], obj ) ) return true;
+	return false;
+}
+
+function randomBetween (start,end) { 
+	return Math.floor(Math.random() * (end-start) + start);
+}
+
+function randInt (start,end) { 
+	return Math.floor(Math.random() * (end-start) + start);
+}
+
+function randDouble (start,end) { 
+	return Math.random() * (end-start) + start;
 }
 
 function checkLineIntersection(line1, line2) {
