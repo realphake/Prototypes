@@ -7,6 +7,9 @@
 var programState;
 var worldMap;
 var playerLocation;
+var framesElapsed;
+var gridSize;
+var gameSpeed;
 
 ///////////////////////
 // Utility functions!
@@ -23,21 +26,33 @@ function tileColorByType ( tileType ) {
 ///////////////////////////////////
 	
 function updateGame() {
-	if (keyIsDown ('up')) player.y -= 1;
-	if (keyIsDown ('down')) player.y += 1;
-	if (keyIsDown ('left')) player.x -= 1;
-	if (keyIsDown ('right')) player.x += 1;
+	if (framesElapsed >= gridSize) {
+		if (keyIsDown ('up')) {player.moveY = -1; framesElapsed = 0;}
+		else if (keyIsDown ('down')) {player.moveY = 1; framesElapsed = 0;}
+		else if (keyIsDown ('left')) {player.moveX = -1; framesElapsed = 0;}
+		else if (keyIsDown ('right')) {player.moveX = 1; framesElapsed = 0;}
+		// TODO Make every other object move too here.
+	}
+	else if ( framesElapsed < gridSize ) {
+		framesElapsed += gameSpeed;
+		if ( framesElapsed >= gridSize ) {
+			player.x += player.moveX; player.moveX = 0;
+			player.y += player.moveY; player.moveY = 0;
+			// TODO Handle other object's actions too.
+		}
+	}
 }
 
 function renderGame() {
-	var gridSize = 20;
 	for (x = 0; x < 640/gridSize; x++) {
 		for (y = 0; y < 480/gridSize; y++) {
 			var tileColor = tileColorByType ( worldMap[y][x] );
 			fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
 		}
 	}
-	fillCircle(player.x*20+10,player.y*20+10,10,"black");
+	fillCircle(player.x*20+10+player.moveX*framesElapsed,
+			   player.y*20+10+player.moveY*framesElapsed,
+			   10,"black");
 }
 
 function updateMainMenu() {
@@ -55,7 +70,10 @@ function renderMainMenu() {
 
 function setup () {
 	programState = 0;
-	player = {x:1,y:1};
+	player = {x:1,y:1,moveX:0,moveY:0};
+	gridSize = 20;
+	framesElapsed = gridSize;
+	gameSpeed = 2;
 	worldMap = [
 		[1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
