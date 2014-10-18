@@ -1,0 +1,48 @@
+<!DOCTYPE html> <html lang="en"> <body>
+<script src="genericFunctions.js"></script> <script>
+
+var gameState;
+
+function updateGame() {
+	
+}
+
+function renderGame() {
+var gridSize = 20;
+	for (x = 0; x < 640/gridSize; x++) {
+		for (y = 0; y < 480/gridSize; y++) {
+			drawBox (x*gridSize,y*gridSize,gridSize,gridSize,"green");
+		}
+	}
+}
+
+function updateMainMenu() {
+	if ( keyIsDown ("right") ) gameState = 1;
+}
+
+function renderMainMenu() {
+	writeText("Game menu!",10,10, "black");
+	writeText("Press right to start.",10,30, "black");
+}
+
+// Low-end functions
+
+function setup () {
+	gameState = 0;
+}
+
+function update () { 
+	if ( gameState == 0 ) updateMainMenu();
+	else if ( gameState == 1 ) updateGame();
+}
+
+function render () { 
+	clear();
+	if ( gameState == 0 ) renderMainMenu();
+	else if ( gameState == 1 ) renderGame();
+}
+
+setup ();
+setInterval (function () {update () ; render () ;} , 20) ;
+
+</script></body></html>
