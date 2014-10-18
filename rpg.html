@@ -10,10 +10,16 @@ var playerLocation;
 var framesElapsed;
 var gridSize;
 var gameSpeed;
+var MOUNTAIN = 2, GRASS = 0, WATER = 1;
 
 ////////////////////////
 // Utility functions! //
 ////////////////////////
+
+function tileWalkable(x,y) {
+	walkableTerrain = (worldMap[y][x] == GRASS);
+	return walkableTerrain;
+}
 
 function tileColorByType ( tileType ) {
 	if ( tileType == 0 ) return "green";
@@ -21,31 +27,30 @@ function tileColorByType ( tileType ) {
 	if ( tileType == 2 ) return "red";
 }
 
+function startTheTurn () {
+	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) player.moveY = -1;
+	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) player.moveY = 1;
+	else if (keyIsDown ('left') && tileWalkable(player.x-1,player.y)) player.moveX = -1;
+	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) player.moveX = 1;
+	if (player.moveX != 0 || player.moveY != 0) framesElapsed = 0;
+	// TODO Make every other object move too here.
+}
+
 ///////////////////////////////////
 // Important backbone functions! //
 ///////////////////////////////////
-	
+
 function updateGame() {
 	if (framesElapsed >= gridSize) {
-		if (keyIsDown ('up')) {
-			player.moveY = -1; framesElapsed = 0;
-		}
-		else if (keyIsDown ('down')) {
-			player.moveY = 1; framesElapsed = 0;
-		}
-		else if (keyIsDown ('left')) {
-			player.moveX = -1; framesElapsed = 0;
-		}
-		else if (keyIsDown ('right')) {
-			player.moveX = 1; framesElapsed = 0;
-		}
-		// TODO Make every other object move too here.
+		startTheTurn ();
 	}
 	else if ( framesElapsed < gridSize ) {
 		framesElapsed += gameSpeed;
 		if ( framesElapsed >= gridSize ) {
-			player.x += player.moveX; player.moveX = 0;
-			player.y += player.moveY; player.moveY = 0;
+			player.x += player.moveX; 
+			player.moveX = 0;
+			player.y += player.moveY; 
+			player.moveY = 0;
 			// TODO Handle other object's actions too.
 		}
 	}
@@ -83,8 +88,8 @@ function setup () {
 	framesElapsed = gridSize;
 	gameSpeed = 2;
 	worldMap = [
-		[1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -93,20 +98,20 @@ function setup () {
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+		[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]];
 }
 
 function update () { 
@@ -119,6 +124,10 @@ function render () {
 	if ( programState == 0 ) renderMainMenu();
 	else if ( programState == 1 ) renderGame();
 }
+
+/////////////////////
+// Start the game. //
+/////////////////////
 
 setup ();
 setInterval (function () {update () ; render () ;} , 20) ;
