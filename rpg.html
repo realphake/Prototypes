@@ -1,8 +1,8 @@
 <!DOCTYPE html> <html lang="en"> <body>
 <script src="genericFunctions.js"></script> <script>
 
-//////////////////////
-// Global Variables!
+///////////////////////
+// Global Variables! //
 ///////////////////////
 var programState;
 var worldMap;
@@ -11,9 +11,9 @@ var framesElapsed;
 var gridSize;
 var gameSpeed;
 
-///////////////////////
-// Utility functions!
-///////////////////////
+////////////////////////
+// Utility functions! //
+////////////////////////
 
 function tileColorByType ( tileType ) {
 	if ( tileType == 0 ) return "green";
@@ -21,16 +21,24 @@ function tileColorByType ( tileType ) {
 	if ( tileType == 2 ) return "red";
 }
 
-//////////////////////////////////
-// Important backbone functions!
+///////////////////////////////////
+// Important backbone functions! //
 ///////////////////////////////////
 	
 function updateGame() {
 	if (framesElapsed >= gridSize) {
-		if (keyIsDown ('up')) {player.moveY = -1; framesElapsed = 0;}
-		else if (keyIsDown ('down')) {player.moveY = 1; framesElapsed = 0;}
-		else if (keyIsDown ('left')) {player.moveX = -1; framesElapsed = 0;}
-		else if (keyIsDown ('right')) {player.moveX = 1; framesElapsed = 0;}
+		if (keyIsDown ('up')) {
+			player.moveY = -1; framesElapsed = 0;
+		}
+		else if (keyIsDown ('down')) {
+			player.moveY = 1; framesElapsed = 0;
+		}
+		else if (keyIsDown ('left')) {
+			player.moveX = -1; framesElapsed = 0;
+		}
+		else if (keyIsDown ('right')) {
+			player.moveX = 1; framesElapsed = 0;
+		}
 		// TODO Make every other object move too here.
 	}
 	else if ( framesElapsed < gridSize ) {
@@ -64,9 +72,9 @@ function renderMainMenu() {
 	writeText("Press right to start.",10,30, "black");
 }
 
-////////////////////////
-// Low-end functions!
-////////////////////////
+///////////////////////////
+// Background functions! //
+///////////////////////////
 
 function setup () {
 	programState = 0;
