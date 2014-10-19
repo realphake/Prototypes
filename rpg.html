@@ -10,6 +10,7 @@ var playerLocation;
 var framesElapsed;
 var gridSize;
 var gameSpeed;
+var npcs;
 var MOUNTAIN = 2, GRASS = 0, WATER = 1;
 
 ////////////////////////
@@ -27,13 +28,30 @@ function tileColorByType ( tileType ) {
 	if ( tileType == 2 ) return "red";
 }
 
-function startTheTurn () {
-	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) player.moveY = -1;
-	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) player.moveY = 1;
-	else if (keyIsDown ('left') && tileWalkable(player.x-1,player.y)) player.moveX = -1;
-	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) player.moveX = 1;
-	if (player.moveX != 0 || player.moveY != 0) framesElapsed = 0;
+function planMoves () {
+	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) 
+		player.moveY = -1;
+	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) 
+		player.moveY = 1;
+	else if (keyIsDown ('left') && tileWalkable(player.x-1,player.y)) 
+		player.moveX = -1;
+	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) 
+		player.moveX = 1;
 	// TODO Make every other object move too here.
+}
+
+function formallyExecuteMoves () {
+	player.x += player.moveX; 
+	player.moveX = 0;
+	player.y += player.moveY; 
+	player.moveY = 0;
+	// TODO Handle other object's actions too.
+}
+
+function drawCharacter (character) {
+	fillCircle(character.x*20+10+character.moveX*framesElapsed,
+			   character.y*20+10+character.moveY*framesElapsed,
+			   10,"black");
 }
 
 ///////////////////////////////////
@@ -42,17 +60,14 @@ function startTheTurn () {
 
 function updateGame() {
 	if (framesElapsed >= gridSize) {
-		startTheTurn ();
+		planMoves ();
+		if (player.moveX != 0 || player.moveY != 0)
+			framesElapsed = 0;
 	}
 	else if ( framesElapsed < gridSize ) {
 		framesElapsed += gameSpeed;
-		if ( framesElapsed >= gridSize ) {
-			player.x += player.moveX; 
-			player.moveX = 0;
-			player.y += player.moveY; 
-			player.moveY = 0;
-			// TODO Handle other object's actions too.
-		}
+		if ( framesElapsed >= gridSize )
+			formallyExecuteMoves();
 	}
 }
 
@@ -63,9 +78,10 @@ function renderGame() {
 			fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
 		}
 	}
-	fillCircle(player.x*20+10+player.moveX*framesElapsed,
-			   player.y*20+10+player.moveY*framesElapsed,
-			   10,"black");
+	drawCharacter (player);
+	for ( c = 0; c < npcs.length; c++ ) {
+		drawCharacter (npcs[c]) ;
+	}
 }
 
 function updateMainMenu() {
@@ -84,9 +100,11 @@ function renderMainMenu() {
 function setup () {
 	programState = 0;
 	player = {x:1,y:1,moveX:0,moveY:0};
+	npcs = [{x:2,y:2,moveX:0,moveY:0,hostile:false},
+			{x:20,y:20,moveX:0,moveY:0,hostile:true}];
 	gridSize = 20;
-	framesElapsed = gridSize;
-	gameSpeed = 2;
+	framesElapsed = 0;
+	gameSpeed = 3;
 	worldMap = [
 		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
