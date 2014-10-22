@@ -11,21 +11,31 @@ var framesElapsed;
 var gridSize;
 var gameSpeed;
 var npcs;
-var ROCK = 2, GRASS = 0, WATER = 1;
+var GRASS = 0, WATER = 1, ROCK = 2;
+var EAST = 0, NORTH = 1, WEST = 2, SOUTH = 3;
 
 ////////////////////////
 // Utility functions! //
 ////////////////////////
 
+function directionToCoords(direction) {
+	dX = Math.round(Math.cos( direction/4 * 2 * Math.PI ));
+	dY = -Math.round(Math.sin( direction/4 * 2 * Math.PI ));
+	return {x:dX,y:dY};
+}
+
 function tileWalkable(x,y) {
 	walkableTerrain = true;
-	if (worldMap[y][x] == undefined)
+	if (worldMap[y][x] == undefined) {
 		walkableTerrain = false;
-	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) 
+	}
+	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) {
 		walkableTerrain = false;
+	}
 	for ( c = 0; c < npcs.length; c++ ) {
-		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y)
+		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y) {
 			walkableTerrain = false;
+		}
 	}
 	return walkableTerrain;
 }
@@ -36,7 +46,7 @@ function tileColorByType ( tileType ) {
 	if ( tileType == ROCK ) return "red";
 }
 
-function planMoves () {
+function planPlayerMoves () {
 	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) 
 		player.moveY = -1;
 	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) 
@@ -45,7 +55,14 @@ function planMoves () {
 		player.moveX = -1;
 	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) 
 		player.moveX = 1;
-	// TODO Make every other object move too here.
+}
+
+function planNpcMoves () {
+	for ( c = 0; c < npcs.length; c++ ) {
+		move = directionToCoords(randInt (0,4));
+		npcs[c].moveX = move.x;
+		npcs[c].moveY = move.y;
+	}
 }
 
 function formallyExecuteMoves () {
@@ -53,13 +70,18 @@ function formallyExecuteMoves () {
 	player.moveX = 0;
 	player.y += player.moveY; 
 	player.moveY = 0;
-	// TODO Handle other object's actions too.
+	for ( c = 0; c < npcs.length; c++ ) {
+		npcs[c].x += npcs[c].moveX; 
+		npcs[c].moveX = 0;
+		npcs[c].y += npcs[c].moveY; 
+		npcs[c].moveY = 0;
+	}
 }
 
 function drawCharacter (character) {
 	fillCircle(character.x*20+10+character.moveX*framesElapsed,
 			   character.y*20+10+character.moveY*framesElapsed,
-			   10,"black");
+			   10,character.color);
 }
 
 ///////////////////////////////////
@@ -68,9 +90,11 @@ function drawCharacter (character) {
 
 function updateGame() {
 	if (framesElapsed >= gridSize) {
-		planMoves ();
-		if (player.moveX != 0 || player.moveY != 0)
+		planPlayerMoves ();
+		if (player.moveX != 0 || player.moveY != 0) {
+			planNpcMoves ();
 			framesElapsed = 0;
+		}
 	}
 	else if ( framesElapsed < gridSize ) {
 		framesElapsed += gameSpeed;
@@ -107,9 +131,10 @@ function renderMainMenu() {
 
 function setup () {
 	programState = 0;
-	player = {x:1,y:1,moveX:0,moveY:0};
-	npcs = [{x:2,y:2,moveX:0,moveY:0,hostile:false},
-			{x:20,y:20,moveX:0,moveY:0,hostile:true}];
+	player = {x:1,y:1,moveX:0,moveY:0,color:"black"};
+	npcs = [{x:2,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
+			{x:1,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
+			{x:20,y:20,moveX:0,moveY:0,hostile:true,color:"white"}];
 	gridSize = 20;
 	framesElapsed = 0;
 	gameSpeed = 3;
