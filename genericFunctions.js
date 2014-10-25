@@ -153,6 +153,24 @@ function drawLine(x1,y1,x2,y2, color) {
 // Other, utility //
 ////////////////////
 
+function bresenhamLine(start, end) {
+	var line = [];
+    var deltax = end.x - start.x;
+    var deltay = end.y - start.y;
+    var error = 0;
+    var deltaerr = Math.abs (deltay / deltax); // Assume deltax != 0 (line is not vertical)
+	var y = start.y; 
+    for ( var x = start.x; x <= end.x; x++ ) {
+        line.push({x:x, y:y});
+        error = error + deltaerr;
+        if ( error >= 0.5 ) {
+            y += 1;
+            error = error - 1.0;
+		}
+	}
+	return line;
+}
+
 function clone(obj){
     if(obj == null || typeof(obj) != 'object')
         return obj;

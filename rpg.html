@@ -11,7 +11,7 @@ var framesElapsed;
 var gridSize;
 var gameSpeed;
 var npcs;
-var GRASS = 0, WATER = 1, ROCK = 2;
+var GRASS = 0, WATER = 1, ROCK = 2, SAND = 3;
 var EAST = 0, NORTH = 1, WEST = 2, SOUTH = 3;
 
 ////////////////////////
@@ -19,22 +19,16 @@ var EAST = 0, NORTH = 1, WEST = 2, SOUTH = 3;
 ////////////////////////
 
 function directionToCoords(direction) {
-	dX = Math.round(Math.cos( direction/4 * 2 * Math.PI ));
-	dY = -Math.round(Math.sin( direction/4 * 2 * Math.PI ));
+	var dX = Math.round(Math.cos( direction/4 * 2 * Math.PI ));
+	var dY = -Math.round(Math.sin( direction/4 * 2 * Math.PI ));
 	return {x:dX,y:dY};
 }
 
 function tileWalkable(x,y) {
-	walkableTerrain = true;
-	if (worldMap[y][x] == undefined) {
-		walkableTerrain = false;
-	}
-	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) {
-		walkableTerrain = false;
-	}
-	if (player.x+player.moveX == x && player.y+player.moveY == y) {
-		walkableTerrain = false;
-	}
+	var walkableTerrain = true;
+	if (worldMap[y][x] == undefined) { walkableTerrain = false; }
+	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) { walkableTerrain = false; }
+	if (player.x+player.moveX == x && player.y+player.moveY == y) { walkableTerrain = false; }
 	for ( var c = 0; c < npcs.length; c++ ) {
 		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y) {
 			walkableTerrain = false;
@@ -47,23 +41,20 @@ function tileColorByType ( tileType ) {
 	if ( tileType == GRASS ) return "green";
 	if ( tileType == WATER ) return "blue";
 	if ( tileType == ROCK ) return "red";
+	if ( tileType == SAND ) return "yellow";
 }
 
 function planPlayerMoves () {
 	player.moveX = 0; player.moveY = 0;
-	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) 
-		player.moveY -= 1;
-	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) 
-		player.moveY += 1;
-	else if (keyIsDown ('left') && tileWalkable(player.x-1,player.y)) 
-		player.moveX -= 1;
-	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) 
-		player.moveX += 1;
+	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) { player.moveY -= 1; }
+	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) { player.moveY += 1; }
+	else if (keyIsDown ('left') && tileWalkable(player.x-1,player.y)) { player.moveX -= 1; }
+	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) { player.moveX += 1; }
 }
 
 function planNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
-		move = directionToCoords(randInt (0,4));
+		var move = directionToCoords(randInt (0,4));
 		if ( tileWalkable(npcs[c].x+move.x, npcs[c].y+move.y) ) {
 			npcs[c].moveX = move.x;
 			npcs[c].moveY = move.y;
@@ -85,9 +76,9 @@ function formallyExecuteMoves () {
 }
 
 function drawCharacter (character) {
-	fillCircle(character.x*20+10+character.moveX*framesElapsed,
-			   character.y*20+10+character.moveY*framesElapsed,
-			   10,character.color);
+	fillCircle( character.x*gridSize+gridSize/2+character.moveX*framesElapsed,
+				character.y*gridSize+gridSize/2+character.moveY*framesElapsed,
+				gridSize/2,character.color);
 }
 
 ///////////////////////////////////
@@ -104,31 +95,28 @@ function updateGame() {
 	}
 	else if ( framesElapsed < gridSize ) {
 		framesElapsed += gameSpeed;
-		if ( framesElapsed >= gridSize )
-			formallyExecuteMoves();
+		if ( framesElapsed >= gridSize ) { formallyExecuteMoves(); }
 	}
 }
 
 function renderGame() {
-	for ( var x = 0; x < 640/gridSize; x++) {
-		for ( var y = 0; y < 480/gridSize; y++) {
+	for ( var y = 0; y < worldMap.length; y++) {
+		for ( var x = 0; x < worldMap[y].length; x++) {
 			var tileColor = tileColorByType ( worldMap[y][x] );
 			fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
 		}
 	}
 	drawCharacter (player);
-	for ( var c = 0; c < npcs.length; c++ ) {
-		drawCharacter (npcs[c]) ;
-	}
+	for ( var c = 0; c < npcs.length; c++ ) { drawCharacter (npcs[c]) ; }
 }
 
 function updateMainMenu() {
-	if ( keyIsDown ("right") ) programState = 1;
+	if ( keyIsDown ("right") ) { programState = 1; }
 }
 
 function renderMainMenu() {
-	writeText("Game menu!",10,10, "black");
-	writeText("Press right to start.",10,30, "black");
+	writeText("Game menu!",100,100, "black");
+	writeText("Press right to start.",100,130, "black");
 }
 
 ///////////////////////////
@@ -140,46 +128,52 @@ function setup () {
 	player = {x:1,y:1,moveX:0,moveY:0,color:"black"};
 	npcs = [{x:2,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
 			{x:1,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
-			{x:20,y:20,moveX:0,moveY:0,hostile:true,color:"white"}];
-	gridSize = 20;
+			{x:20,y:20,moveX:0,moveY:0,hostile:true,color:"red"}];
+	gridSize = 16;
 	framesElapsed = 0;
 	gameSpeed = 3;
 	worldMap = [
-		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0],
-		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0],
-		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
-		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]];
+		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+		[2,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0],
+		[2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0],
+		[2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0]];
 }
 
 function update () { 
-	if ( programState == 0 ) updateMainMenu();
-	else if ( programState == 1 ) updateGame();
+	if ( programState == 0 ) { updateMainMenu(); }
+	else if ( programState == 1 ) { updateGame(); }
 }
 
 function render () { 
 	clear();
-	if ( programState == 0 ) renderMainMenu();
-	else if ( programState == 1 ) renderGame();
+	if ( programState == 0 ) { renderMainMenu(); }
+	else if ( programState == 1 ) { renderGame(); }
 }
 
 /////////////////////
