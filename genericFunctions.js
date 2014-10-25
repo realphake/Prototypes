@@ -158,13 +158,20 @@ function bresenhamLine(start, end) {
     var deltax = end.x - start.x;
     var deltay = end.y - start.y;
     var error = 0;
+	if ( deltax == 0 ) {
+		for ( var y = start.y; y <= end.y; y++ ) {
+			line.push({x:start.x,y:y});
+		}
+		return line;
+	}
     var deltaerr = Math.abs (deltay / deltax); // Assume deltax != 0 (line is not vertical)
 	var y = start.y; 
     for ( var x = start.x; x <= end.x; x++ ) {
         line.push({x:x, y:y});
         error = error + deltaerr;
         if ( error >= 0.5 ) {
-            y += 1;
+            if ( deltay < 0 ) { y -= 1; }
+			if ( deltay >= 0 ) { y += 1; }
             error = error - 1.0;
 		}
 	}
