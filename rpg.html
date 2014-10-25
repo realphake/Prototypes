@@ -5,7 +5,8 @@
 // Global Variables! //
 ///////////////////////
 var programState;
-var worldMap, playerLocation, npcs;
+var worldMap, seenMap;
+var playerLocation, npcs;
 var framesElapsed;
 var gridSize;
 var gameSpeed;
@@ -86,6 +87,11 @@ function formallyExecuteMoves () {
 		npcs[c].y += npcs[c].moveY; 
 		npcs[c].moveY = 0;
 	}
+	for (var x = 0; x < worldMap[0].length; x ++ ) {
+		for (var y = 0; y < worldMap.length; y ++ ) {
+			if ( lineOfSight (player,{x:x,y:y}) ) { seenMap[y][x] = 1; }
+		}
+	}
 }
 
 function drawCharacter (character) {
@@ -125,8 +131,9 @@ function renderGame() {
 	}
 	for ( var y = 0; y < worldMap.length; y++) {
 		for ( var x = 0; x < worldMap[y].length; x++) {
-			if (! lineOfSight(player,{x:x,y:y}) ) 
+			if ( seenMap[y][x] == 0 )  {
 				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black");
+			}
 		}
 	}
 }
@@ -149,7 +156,7 @@ function setup () {
 	player = {x:1,y:1,moveX:0,moveY:0,color:"black"};
 	npcs = [{x:2,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
 			{x:1,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
-			{x:20,y:20,moveX:0,moveY:0,hostile:true,color:"red"}];
+			{x:20,y:20,moveX:0,moveY:0,hostile:true,color:"white"}];
 	gridSize = 16;
 	framesElapsed = 0;
 	gameSpeed = 3;
@@ -184,6 +191,7 @@ function setup () {
 		[2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0],
 		[2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0]];
+	seenMap = twoDimensionalZeroes(worldMap.length, worldMap[0].length);
 }
 
 function update () { 

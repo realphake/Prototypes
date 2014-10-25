@@ -153,6 +153,13 @@ function drawLine(x1,y1,x2,y2, color) {
 // Other, utility //
 ////////////////////
 
+function twoDimensionalZeroes(rows, cols) {
+  var array = [], row = [];
+  while (cols--) row.push(0);
+  while (rows--) array.push(row.slice());
+  return array;
+}
+
 function bresenhamLine(start, end){
 	var x0 = start.x; var y0 = start.y;
     var x1 = end.x; var y1 = end.y;
