@@ -153,27 +153,21 @@ function drawLine(x1,y1,x2,y2, color) {
 // Other, utility //
 ////////////////////
 
-function bresenhamLine(start, end) {
+function bresenhamLine(start, end){
+	var x0 = start.x; var y0 = start.y;
+    var x1 = end.x; var y1 = end.y;
 	var line = [];
-    var deltax = end.x - start.x;
-    var deltay = end.y - start.y;
-    var error = 0;
-	if ( deltax == 0 ) {
-		for ( var y = start.y; y <= end.y; y++ ) {
-			line.push({x:start.x,y:y});
-		}
-		return line;
-	}
-    var deltaerr = Math.abs (deltay / deltax); // Assume deltax != 0 (line is not vertical)
-	var y = start.y; 
-    for ( var x = start.x; x <= end.x; x++ ) {
-        line.push({x:x, y:y});
-        error = error + deltaerr;
-        if ( error >= 0.5 ) {
-            if ( deltay < 0 ) { y -= 1; }
-			if ( deltay >= 0 ) { y += 1; }
-            error = error - 1.0;
-		}
+	var dx = Math.abs(x1-x0);
+	var dy = Math.abs(y1-y0);
+	var sx = (x0 < x1) ? 1 : -1;
+	var sy = (y0 < y1) ? 1 : -1;
+	var err = dx-dy;
+	while(true){
+		line.push({x:x0,y:y0});
+		if ((x0==x1) && (y0==y1)) break;
+		var e2 = 2*err;
+		if (e2 >-dy){ err -= dy; x0  += sx; }
+		if (e2 < dx){ err += dx; y0  += sy; }
 	}
 	return line;
 }

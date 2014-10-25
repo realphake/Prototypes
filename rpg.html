@@ -18,8 +18,8 @@ var EAST = 0, NORTH = 1, WEST = 2, SOUTH = 3;
 
 function lineOfSight (start, end) {
 	var line = bresenhamLine(start, end);
-	for ( var p = 0; p < line.length; p ++ ) {
-		if ( ! tileWalkable(line[p].x,line[p].y) ) { return false; }
+	for ( var p = 1; p < line.length-1; p ++ ) {
+		if ( ! tileVisible(line[p].x,line[p].y) ) { return false; }
 	}
 	return true;
 }
@@ -41,6 +41,13 @@ function tileWalkable(x,y) {
 		}
 	}
 	return walkableTerrain;
+}
+
+function tileVisible(x,y) {
+	var visibleTerrain = true;
+	if (worldMap[y][x] == undefined) { visibleTerrain = false; }
+	if (worldMap[y][x] == ROCK) { visibleTerrain = false; }
+	return visibleTerrain;
 }
 
 function tileColorByType ( tileType ) {
@@ -110,13 +117,18 @@ function renderGame() {
 		for ( var x = 0; x < worldMap[y].length; x++) {
 			var tileColor = tileColorByType ( worldMap[y][x] );
 			fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
-			if ( ! lineOfSight (player, {x:x, y:y}) ) {
-				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black");
-			}
 		}
 	}
 	drawCharacter (player);
-	for ( var c = 0; c < npcs.length; c++ ) { drawCharacter (npcs[c]) ; }
+	for ( var c = 0; c < npcs.length; c++ ) { 
+		drawCharacter (npcs[c]) ;
+	}
+	for ( var y = 0; y < worldMap.length; y++) {
+		for ( var x = 0; x < worldMap[y].length; x++) {
+			if (! lineOfSight(player,{x:x,y:y}) ) 
+				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black");
+		}
+	}
 }
 
 function updateMainMenu() {
