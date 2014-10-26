@@ -4,14 +4,13 @@
 ///////////////////////
 // Global Variables! //
 ///////////////////////
-var programState;
-var worldMap, seenMap;
+var programState, turnNumber;
+var worldMap, seenMap, smellMap;
 var playerLocation, npcs;
 var framesElapsed;
 var gridSize;
 var gameSpeed;
 var GRASS = 0, WATER = 1, ROCK = 2, SAND = 3;
-var EAST = 0, NORTH = 1, WEST = 2, SOUTH = 3;
 
 ////////////////////////
 // Utility functions! //
@@ -21,6 +20,14 @@ function lineOfSight (start, end) {
 	var line = bresenhamLine(start, end);
 	for ( var p = 1; p < line.length-1; p ++ ) {
 		if ( ! tileVisible(line[p].x,line[p].y) ) { return false; }
+	}
+	return true;
+}
+
+function lineOfEffect (start, end) {
+	var line = bresenhamLine(start, end);
+	for ( var p = 1; p < line.length-1; p ++ ) {
+		if ( ! tileWalkable(line[p].x,line[p].y) ) { return false; }
 	}
 	return true;
 }
@@ -69,6 +76,27 @@ function planPlayerMoves () {
 function planNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
 		var move = directionToCoords(randInt (0,4));
+		if (npcs[c].hostile) {
+			// Chase the player:
+			var highestSmell = 0;
+			move = {x:0,y:0};
+			if (highestSmell < smellMap[npcs[c].y+1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y+1)) {
+				highestSmell = smellMap[npcs[c].y+1][npcs[c].x];
+				move = {x:0,y:1};
+			}
+			if (highestSmell < smellMap[npcs[c].y-1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y-1)) {
+				highestSmell = smellMap[npcs[c].y-1][npcs[c].x];
+				move = {x:0,y:-1};
+			}
+			if (highestSmell < smellMap[npcs[c].y][npcs[c].x+1] && tileWalkable(npcs[c].x+1,npcs[c].y)) {
+				highestSmell = smellMap[npcs[c].y][npcs[c].x+1];
+				move = {x:1,y:0};
+			} 
+			if (highestSmell < smellMap[npcs[c].y][npcs[c].x-1] && tileWalkable(npcs[c].x-1,npcs[c].y) ) {
+				highestSmell = smellMap[npcs[c].y][npcs[c].x-1];
+				move = {x:-1,y:0};
+			}
+		}
 		if ( tileWalkable(npcs[c].x+move.x, npcs[c].y+move.y) ) {
 			npcs[c].moveX = move.x;
 			npcs[c].moveY = move.y;
@@ -77,6 +105,7 @@ function planNpcMoves () {
 }
 
 function formallyExecuteMoves () {
+	turnNumber+=1;
 	player.x += player.moveX; 
 	player.moveX = 0;
 	player.y += player.moveY; 
@@ -90,6 +119,13 @@ function formallyExecuteMoves () {
 	for (var x = 0; x < worldMap[0].length; x ++ ) {
 		for (var y = 0; y < worldMap.length; y ++ ) {
 			if ( lineOfSight (player,{x:x,y:y}) ) { seenMap[y][x] = 1; }
+		}
+	}
+	for (var x = 0; x < worldMap[0].length; x ++ ) {
+		for (var y = 0; y < worldMap.length; y ++ ) {
+			if ( lineOfEffect (player,{x:x,y:y}) ) { 
+				smellMap[y][x] = turnNumber/manhattanDistance(player,{x:x,y:y}); 
+			}
 		}
 	}
 }
@@ -136,6 +172,11 @@ function renderGame() {
 			}
 		}
 	}
+	for ( var y = 0; y < worldMap.length; y++) {
+		for ( var x = 0; x < worldMap[y].length; x++) {
+			writeText(Math.round(smellMap[y][x]),x*gridSize,y*gridSize, "white");
+		}
+	}
 }
 
 function updateMainMenu() {
@@ -153,6 +194,7 @@ function renderMainMenu() {
 
 function setup () {
 	programState = 0;
+	turnNumber = 0;
 	player = {x:1,y:1,moveX:0,moveY:0,color:"black"};
 	npcs = [{x:2,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
 			{x:1,y:2,moveX:0,moveY:0,hostile:false,color:"white"},
@@ -192,6 +234,7 @@ function setup () {
 		[2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0]];
 	seenMap = twoDimensionalZeroes(worldMap.length, worldMap[0].length);
+	smellMap = twoDimensionalZeroes(worldMap.length, worldMap[0].length);
 }
 
 function update () { 

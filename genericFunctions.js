@@ -153,6 +153,10 @@ function drawLine(x1,y1,x2,y2, color) {
 // Other, utility //
 ////////////////////
 
+function manhattanDistance(start,end) {
+	return Math.abs(start.x-end.x)+Math.abs(start.y-end.y)
+}
+
 function twoDimensionalZeroes(rows, cols) {
   var array = [], row = [];
   while (cols--) row.push(0);
