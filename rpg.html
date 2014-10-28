@@ -124,7 +124,7 @@ function formallyExecuteMoves () {
 	for (var x = 0; x < worldMap[0].length; x ++ ) {
 		for (var y = 0; y < worldMap.length; y ++ ) {
 			if ( lineOfEffect (player,{x:x,y:y}) ) { 
-				smellMap[y][x] = turnNumber/manhattanDistance(player,{x:x,y:y}); 
+				smellMap[y][x] = 20*turnNumber - manhattanDistance(player,{x:x,y:y}); 
 			}
 		}
 	}
@@ -170,11 +170,6 @@ function renderGame() {
 			if ( seenMap[y][x] == 0 )  {
 				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black");
 			}
-		}
-	}
-	for ( var y = 0; y < worldMap.length; y++) {
-		for ( var x = 0; x < worldMap[y].length; x++) {
-			writeText(Math.round(smellMap[y][x]),x*gridSize,y*gridSize, "white");
 		}
 	}
 }
