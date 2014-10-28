@@ -38,17 +38,25 @@ function directionToCoords(direction) {
 	return {x:dX,y:dY};
 }
 
-function tileWalkable(x,y) {
-	var walkableTerrain = true;
-	if (worldMap[y][x] == undefined) { walkableTerrain = false; }
-	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) { walkableTerrain = false; }
-	if (player.x+player.moveX == x && player.y+player.moveY == y) { walkableTerrain = false; }
+function npcAt (x,y) {
 	for ( var c = 0; c < npcs.length; c++ ) {
 		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y) {
-			walkableTerrain = false;
+			return c;
 		}
 	}
-	return walkableTerrain;
+}
+
+function tileWalkable(x,y) {
+	if (worldMap[y][x] == undefined) { return false; }
+	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) { return false; }
+	if (player.x+player.moveX == x && player.y+player.moveY == y) { return false; }
+	if ( npcAt (x,y) ) { return false; }
+	for ( var c = 0; c < npcs.length; c++ ) {
+		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y) {
+			return false;
+		}
+	}
+	return true;
 }
 
 function tileVisible(x,y) {
@@ -73,29 +81,33 @@ function planPlayerMoves () {
 	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) { player.moveX += 1; }
 }
 
+function chasePlayer (c) {
+	var highestSmell = 0;
+	var move = {x:0,y:0};
+	if (highestSmell < smellMap[npcs[c].y+1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y+1)) {
+		highestSmell = smellMap[npcs[c].y+1][npcs[c].x];
+		move = {x:0,y:1};
+	}
+	if (highestSmell < smellMap[npcs[c].y-1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y-1)) {
+		highestSmell = smellMap[npcs[c].y-1][npcs[c].x];
+		move = {x:0,y:-1};
+	}
+	if (highestSmell < smellMap[npcs[c].y][npcs[c].x+1] && tileWalkable(npcs[c].x+1,npcs[c].y)) {
+		highestSmell = smellMap[npcs[c].y][npcs[c].x+1];
+		move = {x:1,y:0};
+	} 
+	if (highestSmell < smellMap[npcs[c].y][npcs[c].x-1] && tileWalkable(npcs[c].x-1,npcs[c].y) ) {
+		highestSmell = smellMap[npcs[c].y][npcs[c].x-1];
+		move = {x:-1,y:0};
+	}
+	return move
+}
+
 function planNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
-		var move = directionToCoords(randInt (0,4));
+		var move = {x:0,y:0};
 		if (npcs[c].hostile) {
-			// Chase the player:
-			var highestSmell = 0;
-			move = {x:0,y:0};
-			if (highestSmell < smellMap[npcs[c].y+1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y+1)) {
-				highestSmell = smellMap[npcs[c].y+1][npcs[c].x];
-				move = {x:0,y:1};
-			}
-			if (highestSmell < smellMap[npcs[c].y-1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y-1)) {
-				highestSmell = smellMap[npcs[c].y-1][npcs[c].x];
-				move = {x:0,y:-1};
-			}
-			if (highestSmell < smellMap[npcs[c].y][npcs[c].x+1] && tileWalkable(npcs[c].x+1,npcs[c].y)) {
-				highestSmell = smellMap[npcs[c].y][npcs[c].x+1];
-				move = {x:1,y:0};
-			} 
-			if (highestSmell < smellMap[npcs[c].y][npcs[c].x-1] && tileWalkable(npcs[c].x-1,npcs[c].y) ) {
-				highestSmell = smellMap[npcs[c].y][npcs[c].x-1];
-				move = {x:-1,y:0};
-			}
+			move = chasePlayer(c);
 		}
 		if ( tileWalkable(npcs[c].x+move.x, npcs[c].y+move.y) ) {
 			npcs[c].moveX = move.x;
@@ -104,23 +116,31 @@ function planNpcMoves () {
 	}
 }
 
-function formallyExecuteMoves () {
-	turnNumber+=1;
+function executePlayerMove () {
 	player.x += player.moveX; 
 	player.moveX = 0;
 	player.y += player.moveY; 
 	player.moveY = 0;
+}
+
+function executeNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
 		npcs[c].x += npcs[c].moveX; 
 		npcs[c].moveX = 0;
 		npcs[c].y += npcs[c].moveY; 
 		npcs[c].moveY = 0;
 	}
+}
+
+function updateSeenMap () {
 	for (var x = 0; x < worldMap[0].length; x ++ ) {
 		for (var y = 0; y < worldMap.length; y ++ ) {
 			if ( lineOfSight (player,{x:x,y:y}) ) { seenMap[y][x] = 1; }
 		}
 	}
+}
+
+function updateSmellMap () {
 	for (var x = 0; x < worldMap[0].length; x ++ ) {
 		for (var y = 0; y < worldMap.length; y ++ ) {
 			if ( lineOfEffect (player,{x:x,y:y}) ) { 
@@ -130,10 +150,46 @@ function formallyExecuteMoves () {
 	}
 }
 
+function formallyExecuteMoves () {
+	turnNumber+=1;
+	executePlayerMove ();
+	executeNpcMoves ();
+	updateSeenMap ();
+	updateSmellMap ();
+}
+
 function drawCharacter (character) {
 	fillCircle( character.x*gridSize+gridSize/2+character.moveX*framesElapsed,
 				character.y*gridSize+gridSize/2+character.moveY*framesElapsed,
 				gridSize/2,character.color);
+}
+
+function drawFogOfWar() {
+	holdChanges();
+	for ( var y = 0; y < worldMap.length; y++) {
+		for ( var x = 0; x < worldMap[y].length; x++) {
+			if ( ! lineOfSight (player,{x:x,y:y}) ) { 
+				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black"); 
+			}
+		}
+	}
+	deployChanges('source-over', 0.5);
+}
+
+function drawTerrain () {
+	for ( var y = 0; y < worldMap.length; y++) {
+		for ( var x = 0; x < worldMap[y].length; x++) {
+			drawTile(x,y);
+		}
+	}
+}
+
+function drawTile(x,y) {
+	var tileColor = tileColorByType ( worldMap[y][x] );
+	if ( seenMap[y][x] == 0 )  {
+		tileColor = "black";
+	}
+	fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
 }
 
 ///////////////////////////////////
@@ -155,23 +211,12 @@ function updateGame() {
 }
 
 function renderGame() {
-	for ( var y = 0; y < worldMap.length; y++) {
-		for ( var x = 0; x < worldMap[y].length; x++) {
-			var tileColor = tileColorByType ( worldMap[y][x] );
-			fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
-		}
-	}
+	drawTerrain ();
 	drawCharacter (player);
 	for ( var c = 0; c < npcs.length; c++ ) { 
-		drawCharacter (npcs[c]) ;
+		if ( lineOfSight (player,npcs[c]) ) drawCharacter (npcs[c]) ;
 	}
-	for ( var y = 0; y < worldMap.length; y++) {
-		for ( var x = 0; x < worldMap[y].length; x++) {
-			if ( seenMap[y][x] == 0 )  {
-				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black");
-			}
-		}
-	}
+	drawFogOfWar();
 }
 
 function updateMainMenu() {
@@ -203,13 +248,13 @@ function setup () {
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2],
+		[0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,2],
+		[0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,2],
+		[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,2],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,2,0,2,2,2,2,2],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2],
+		[0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,2,0,2,2,2,2,2,2,2,2,2,0,2],
 		[0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
