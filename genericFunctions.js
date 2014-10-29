@@ -6,6 +6,8 @@
 var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
 var keysDown = {};
+var loadingImages = 0;
+var loadedImages = 0;
 var mouse = {
 	isDown: false,
 	wentDownAt: {x: 320, y: 240},
@@ -85,6 +87,14 @@ function keyWentUp (e) {
 ////////////////////////////////////
 // Graphical, rendering functions //
 ////////////////////////////////////
+
+function startLoading (filename) {
+	loadingImages += 1;
+	theImage = new Image();
+	theImage.onload = function () {loadedImages += 1;}
+	theImage.src = filename;
+	return theImage;
+}
 
 function holdChanges() {
 	currentContext = tempContext;

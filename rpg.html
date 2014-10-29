@@ -8,6 +8,7 @@
 ///////////////////////
 
 var GRASS = 0, WATER = 1, ROCK = 2, SAND = 3;
+var sprites = {};
 
 ////////////////////////
 // Utility functions! //
@@ -61,13 +62,6 @@ function tileVisible(x,y) {
 	if (worldMap[y][x] == undefined) { visibleTerrain = false; }
 	if (worldMap[y][x] == ROCK) { visibleTerrain = false; }
 	return visibleTerrain;
-}
-
-function tileColorByType ( tileType ) {
-	if ( tileType == GRASS ) return "green";
-	if ( tileType == WATER ) return "blue";
-	if ( tileType == ROCK ) return "red";
-	if ( tileType == SAND ) return "yellow";
 }
 
 function planPlayerMoves () {
@@ -185,12 +179,19 @@ function drawTerrain () {
 	}
 }
 
+function tileSpriteByType ( tileType ) {
+	if ( tileType == GRASS ) return sprites.grass;
+	if ( tileType == WATER ) return sprites.water;
+	if ( tileType == ROCK ) return sprites.rock;
+	if ( tileType == SAND ) return sprites.sand;
+}
+
 function drawTile(x,y) {
-	var tileColor = tileColorByType ( worldMap[y][x] );
 	if ( seenMap[y][x] == 0 )  {
-		tileColor = "black";
+		fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black");
+	} else {
+		drawImage(tileSpriteByType(worldMap[y][x]), x*gridSize,y*gridSize, 16,16, 0,0, 16,16);
 	}
-	fillBox (x*gridSize,y*gridSize,gridSize,gridSize,tileColor);
 }
 
 ///////////////////////////////////
@@ -241,6 +242,10 @@ function setup () {
 	gameSpeed = 3;
 	seenMap = twoDimensionalZeroes(worldMap.length, worldMap[0].length);
 	smellMap = twoDimensionalZeroes(worldMap.length, worldMap[0].length);
+	sprites.water = startLoading ("rpgtiles/water.png");
+	sprites.grass = startLoading ("rpgtiles/grass.png");
+	sprites.rock = startLoading ("rpgtiles/rock.png");
+	sprites.sand = startLoading ("rpgtiles/sand.png");
 }
 
 function update () { 
