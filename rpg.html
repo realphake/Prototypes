@@ -7,7 +7,7 @@
 // Global Variables! //
 ///////////////////////
 
-var GRASS = 0, WATER = 1, ROCK = 2, SAND = 3;
+var WATER = 0, SAND = 1, GRASS = 2, ROCK = 3;
 var sprites = {};
 
 ////////////////////////
@@ -45,6 +45,7 @@ function npcAt (x,y) {
 }
 
 function tileWalkable(x,y) {
+	if (x < 0 || y < 0 || y >= worldMap.length || x >= worldMap[0].length ) { return false; }
 	if (worldMap[y][x] == undefined) { return false; }
 	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) { return false; }
 	if (player.x+player.moveX == x && player.y+player.moveY == y) { return false; }
@@ -75,19 +76,19 @@ function planPlayerMoves () {
 function chasePlayer (c) {
 	var highestSmell = 0;
 	var move = {x:0,y:0};
-	if (highestSmell < smellMap[npcs[c].y+1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y+1)) {
+	if (tileWalkable(npcs[c].x,npcs[c].y+1) && highestSmell < smellMap[npcs[c].y+1][npcs[c].x]) {
 		highestSmell = smellMap[npcs[c].y+1][npcs[c].x];
 		move = {x:0,y:1};
 	}
-	if (highestSmell < smellMap[npcs[c].y-1][npcs[c].x] && tileWalkable(npcs[c].x,npcs[c].y-1)) {
+	if (tileWalkable(npcs[c].x,npcs[c].y-1) && highestSmell < smellMap[npcs[c].y-1][npcs[c].x]) {
 		highestSmell = smellMap[npcs[c].y-1][npcs[c].x];
 		move = {x:0,y:-1};
 	}
-	if (highestSmell < smellMap[npcs[c].y][npcs[c].x+1] && tileWalkable(npcs[c].x+1,npcs[c].y)) {
+	if (tileWalkable(npcs[c].x+1,npcs[c].y) && highestSmell < smellMap[npcs[c].y][npcs[c].x+1]) {
 		highestSmell = smellMap[npcs[c].y][npcs[c].x+1];
 		move = {x:1,y:0};
 	} 
-	if (highestSmell < smellMap[npcs[c].y][npcs[c].x-1] && tileWalkable(npcs[c].x-1,npcs[c].y) ) {
+	if (tileWalkable(npcs[c].x-1,npcs[c].y) && highestSmell < smellMap[npcs[c].y][npcs[c].x-1]) {
 		highestSmell = smellMap[npcs[c].y][npcs[c].x-1];
 		move = {x:-1,y:0};
 	}
@@ -213,7 +214,11 @@ function updateGame() {
 }
 
 function updateMainMenu() {
-	if ( keyIsDown ("right") ) { programState = 1; }
+	if ( loadingImages == loadedImages ) {
+		if ( keyIsDown ("right") ) { 
+			programState = 1; 
+		}
+	}
 }
 
 function renderGame() {
@@ -226,8 +231,12 @@ function renderGame() {
 }
 
 function renderMainMenu() {
-	writeText("Game menu!",100,100, "black");
-	writeText("Press right to start.",100,130, "black");
+	if ( loadingImages == loadedImages ) {
+		writeText("Game menu!",100,100, "black");
+		writeText("Press right to start.",100,130, "black");
+	} else {
+		writeText("Loading.",100,100, "black");
+	}
 }
 
 ///////////////////////////
@@ -246,6 +255,7 @@ function setup () {
 	sprites.grass = startLoading ("rpgtiles/grass.png");
 	sprites.rock = startLoading ("rpgtiles/rock.png");
 	sprites.sand = startLoading ("rpgtiles/sand.png");
+	sprites.map = startLoading ("rpgtiles/map.png");
 }
 
 function update () { 
