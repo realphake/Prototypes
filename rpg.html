@@ -65,53 +65,12 @@ function tileVisible(x,y) {
 	return visibleTerrain;
 }
 
-function livingThingAt (x,y) {
-	if (player.x+player.moveX == x && player.y+player.moveY == y) {
-		return -1; // Player here
-	}
-	for ( var c = 0; c < npcs.length; c++ ) {
-		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y) {
-			return c; // NPC here
-		}
-	}
-	return -2; // Nothing here
-}
-
 function planPlayerMoves () {
 	player.moveX = 0; player.moveY = 0;
-	if (keyIsDown ('up')) {
-		if (tileWalkable(player.x+1,player.y))  {
-			player.moveY -= 1; 
-			player.moveSubmitted = true;
-		} else {
-			player.attackChar = livingThingAt (player.x,player.y-1);
-			if ( player.attackChar >= 0 ) player.moveSubmitted = true;
-		}
-	} else if (keyIsDown ('down')) {
-		if (tileWalkable(player.x+1,player.y))  {
-			player.moveY += 1; 
-			player.moveSubmitted = true; 
-		} else {
-			player.attackChar = livingThingAt (player.x,player.y+1);
-			if ( player.attackChar >= 0 ) player.moveSubmitted = true;
-		}
-	} else if (keyIsDown ('left')) {
-		if (tileWalkable(player.x+1,player.y))  {
-			player.moveX -= 1; 
-			player.moveSubmitted = true; 
-		} else {
-			player.attackChar = livingThingAt (player.x-1,player.y);
-			if ( player.attackChar >= 0 ) player.moveSubmitted = true;
-		}
-	} else if (keyIsDown ('right')) {
-		if (tileWalkable(player.x+1,player.y))  {
-			player.moveX += 1; 
-			player.moveSubmitted = true; 
-		} else {
-			player.attackChar = livingThingAt (player.x+1,player.y);
-			if ( player.attackChar >= 0 ) player.moveSubmitted = true;
-		}
-	}
+	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) { player.moveY -= 1; }
+	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) { player.moveY += 1; }
+	else if (keyIsDown ('left') && tileWalkable(player.x-1,player.y)) { player.moveX -= 1; }
+	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) { player.moveX += 1; }
 }
 
 function chasePlayer (c) {
@@ -157,9 +116,6 @@ function executePlayerMove () {
 	player.moveX = 0;
 	player.y += player.moveY; 
 	player.moveY = 0;
-	if (player.attackChar >= 0) { npcs.splice(player.attackChar, 1); }
-	player.attackChar = -2;
-	player.moveSubmitted = false;
 }
 
 function executeNpcMoves () {
@@ -246,7 +202,7 @@ function drawTile(x,y) {
 function updateGame() {
 	if (framesElapsed >= gridSize) {
 		planPlayerMoves ();
-		if (player.moveSubmitted) {
+		if (player.moveX != 0 || player.moveY != 0) {
 			planNpcMoves ();
 			framesElapsed = 0;
 		}
