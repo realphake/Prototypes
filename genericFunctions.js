@@ -117,7 +117,8 @@ function clear () {
 }
 
 function drawBox (x,y,w,h,color) {
-	currentContext.strokeStyle = color; currentContext.rect(x,y,w,h); currentContext.stroke(); currentContext.strokeStyle = "black";
+	currentContext.strokeStyle = color; currentContext.rect(x,y,w,h); 
+	currentContext.stroke(); currentContext.strokeStyle = "black";
 }
 
 function fillBox (x,y,w,h,color) {
@@ -130,12 +131,14 @@ function drawCircle(x,y,r,color) {
 }
 
 function fillQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color) {
-	currentContext.beginPath(); currentContext.moveTo(x11,y11); currentContext.lineTo(x12,y12); currentContext.lineTo(x22,y22); currentContext.lineTo(x21,y21); currentContext.lineTo(x11,y11);
+	currentContext.beginPath(); currentContext.moveTo(x11,y11); currentContext.lineTo(x12,y12); 
+	currentContext.lineTo(x22,y22); currentContext.lineTo(x21,y21); currentContext.lineTo(x11,y11);
 	currentContext.fillStyle = color; currentContext.fill(); currentContext.fillStyle = "black";
 }
 
 function drawQuadrilateral(x11,y11,x12,y12,x22,y22,x21,y21, color) {
-	currentContext.beginPath(); currentContext.moveTo(x11,y11); currentContext.lineTo(x12,y12); currentContext.lineTo(x22,y22); currentContext.lineTo(x21,y21); currentContext.lineTo(x11,y11);
+	currentContext.beginPath(); currentContext.moveTo(x11,y11); currentContext.lineTo(x12,y12); 
+	currentContext.lineTo(x22,y22); currentContext.lineTo(x21,y21); currentContext.lineTo(x11,y11);
 	currentContext.strokeStyle = color; currentContext.stroke(); currentContext.strokeStyle = "black";
 }
 
@@ -233,20 +236,16 @@ function checkLineIntersection(line1, line2) {
 	var result = { x: null, y: null, onLine1: false, onLine2: false };
 	var denominator = ((line2.y2 - line2.y1) * (line1.x2 - line1.x1)) - ((line2.x2 - line2.x1) * (line1.y2 - line1.y1));
     if (denominator == 0) return result;
-	found = findAandB(line1, line2, denominator);
+	var numerator1 = ((line2.x2 - line2.x1) * (line1.y1 - line2.y1)) - ((line2.y2 - line2.y1) * (line1.x1 - line2.x1));
+    var numerator2 = ((line1.x2 - line1.x1) * (line1.y1 - line2.y1)) - ((line1.y2 - line1.y1) * (line1.x1 - line2.x1));
+    var foundA = numerator1 / denominator;
+    var foundB = numerator2 / denominator;
+	found = {a: foundA, b: foundB};
     result.x = line1.x1 + (found.a * (line1.x2 - line1.x1));
     result.y = line1.y1 + (found.a * (line1.y2 - line1.y1));
     if (found.a >= 0 && found.a <= 1) result.onLine1 = true;
     if (found.b >= 0 && found.b <= 1) result.onLine2 = true;
     return result;
-}
-
-function findAandB (line1, line2, denominator) {
-    var numerator1 = ((line2.x2 - line2.x1) * (line1.y1 - line2.y1)) - ((line2.y2 - line2.y1) * (line1.x1 - line2.x1));
-    var numerator2 = ((line1.x2 - line1.x1) * (line1.y1 - line2.y1)) - ((line1.y2 - line1.y1) * (line1.x1 - line2.x1));
-    var foundA = numerator1 / denominator;
-    var foundB = numerator2 / denominator;
-	return {a: foundA, b: foundB};
 }
 
 function angleOfLine(line1StartX, line1StartY, line1EndX, line1EndY) {
