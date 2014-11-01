@@ -38,10 +38,14 @@ function directionToCoords(direction) {
 
 function npcAt (x,y) {
 	for ( var c = 0; c < npcs.length; c++ ) {
-		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y) {
+		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y && npcs[c].hp > 0 ) {
 			return c;
 		}
 	}
+}
+
+function playerAt (x,y) {
+	return ( player.x+player.moveX == x && player.y+player.moveY == y );
 }
 
 function tileWalkable(x,y) {
@@ -49,12 +53,7 @@ function tileWalkable(x,y) {
 	if (worldMap[y][x] == undefined) { return false; }
 	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) { return false; }
 	if (player.x+player.moveX == x && player.y+player.moveY == y) { return false; }
-	if ( npcAt (x,y) ) { return false; }
-	for ( var c = 0; c < npcs.length; c++ ) {
-		if (npcs[c].x+npcs[c].moveX == x && npcs[c].y+npcs[c].moveY == y) {
-			return false;
-		}
-	}
+	if (npcAt(x,y) >= 0) { return false; }
 	return true;
 }
 
@@ -65,12 +64,20 @@ function tileVisible(x,y) {
 	return visibleTerrain;
 }
 
+function inputPlayerMove (move) {
+	if (tileWalkable(player.x+move.x, player.y+move.y) || npcAt(player.x+move.x, player.y+move.y) >= 0) {
+		player.moveX += move.x;
+		player.moveY += move.y;
+		player.moved = true;
+	}
+}
+
 function planPlayerMoves () {
 	player.moveX = 0; player.moveY = 0;
-	if (keyIsDown ('up') && tileWalkable(player.x,player.y-1)) { player.moveY -= 1; }
-	else if (keyIsDown ('down') && tileWalkable(player.x,player.y+1)) { player.moveY += 1; }
-	else if (keyIsDown ('left') && tileWalkable(player.x-1,player.y)) { player.moveX -= 1; }
-	else if (keyIsDown ('right') && tileWalkable(player.x+1,player.y)) { player.moveX += 1; }
+	if (keyIsDown ('up') ) inputPlayerMove ({x:0,y:-1})
+	else if (keyIsDown ('down') ) inputPlayerMove ({x:0,y:1})
+	else if (keyIsDown ('left') ) inputPlayerMove ({x:-1,y:0})
+	else if (keyIsDown ('right') ) inputPlayerMove ({x:1,y:0})
 }
 
 function chasePlayer (c) {
@@ -98,7 +105,7 @@ function chasePlayer (c) {
 function planNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
 		var move = {x:0,y:0};
-		if (npcs[c].hostile) {
+		if (npcs[c].hostile && npcs[c].hp > 0 ) {
 			if ( manhattanDistance({x:player.x+player.moveX, y:player.y+player.moveY},npcs[c]) <= 1 ) {
 				// attack 
 			}
@@ -111,19 +118,32 @@ function planNpcMoves () {
 	}
 }
 
+function attackCharacter (c) {
+	if ( c >= 0 ) {
+		npcs[c].hp -= 5;
+	} else if (c == "player") {
+		player.hp -= 5;
+	}
+}
+
 function executePlayerMove () {
-	player.x += player.moveX; 
-	player.moveX = 0;
-	player.y += player.moveY; 
-	player.moveY = 0;
+	var index = npcAt(player.x+player.moveX, player.y+player.moveY);
+	if ( index >= 0 ) {
+		attackCharacter (index);
+	} else {
+		player.x += player.moveX; player.y += player.moveY;
+	}
+	player.moveX = 0; player.moveY = 0; player.moved = false;
 }
 
 function executeNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
-		npcs[c].x += npcs[c].moveX; 
-		npcs[c].moveX = 0;
-		npcs[c].y += npcs[c].moveY; 
-		npcs[c].moveY = 0;
+		if ( playerAt (npcs[c].x+npcs[c].moveX, npcs[c].y+npcs[c].moveY) ) {
+			attackCharacter ("player");
+		} else {
+			npcs[c].x += npcs[c].moveX; npcs[c].y += npcs[c].moveY;
+		}
+		npcs[c].moveX = 0; npcs[c].moveY = 0;
 	}
 }
 
@@ -139,7 +159,6 @@ function updateSmellMap () {
 	for (var x = 0; x < worldMap[0].length; x ++ ) {
 		for (var y = 0; y < worldMap.length; y ++ ) {
 			if ( lineOfEffect (player,{x:x,y:y}) ) { 
-				//if ( manhattanDistance(player,{x:x,y:y}) < 20 ) // TODO: Is this a good idea?
 				smellMap[y][x] = 20*turnNumber - manhattanDistance(player,{x:x,y:y}); 
 			}
 		}
@@ -157,7 +176,7 @@ function formallyExecuteMoves () {
 function drawCharacter (character) {
 	fillCircle( character.x*gridSize+gridSize/2+character.moveX*framesElapsed,
 				character.y*gridSize+gridSize/2+character.moveY*framesElapsed,
-				gridSize/2,character.color);
+				gridSize/2, character.hp <= 0 ? 'red' : character.color);
 }
 
 function drawFogOfWar() {
@@ -202,7 +221,7 @@ function drawTile(x,y) {
 function updateGame() {
 	if (framesElapsed >= gridSize) {
 		planPlayerMoves ();
-		if (player.moveX != 0 || player.moveY != 0) {
+		if (player.moved) {
 			planNpcMoves ();
 			framesElapsed = 0;
 		}
@@ -223,10 +242,11 @@ function updateMainMenu() {
 
 function renderGame() {
 	drawTerrain ();
-	drawCharacter (player);
 	for ( var c = 0; c < npcs.length; c++ ) { 
-		if ( lineOfSight (player,npcs[c]) ) drawCharacter (npcs[c]) ;
+		if ( lineOfSight (player,npcs[c]) ) 
+			drawCharacter (npcs[c]) ;
 	}
+	drawCharacter (player);
 	drawFogOfWar();
 }
 
