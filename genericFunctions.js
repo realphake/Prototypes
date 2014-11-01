@@ -40,6 +40,7 @@ function keyIsDown (key) {
 	else if (key == 'down') key = 40;
 	else if (key == 'left') key = 37;
 	else if (key == 'right') key = 39;
+	else if (key == 'space') key = 32;
 	else if (key == 'w') key = 87;
 	else if (key == 's') key = 83;
 	else if (key == 'a') key = 65;

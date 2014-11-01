@@ -52,7 +52,7 @@ function tileWalkable(x,y) {
 	if (x < 0 || y < 0 || y >= worldMap.length || x >= worldMap[0].length ) { return false; }
 	if (worldMap[y][x] == undefined) { return false; }
 	if (worldMap[y][x] == ROCK || worldMap[y][x] == WATER) { return false; }
-	if (player.x+player.moveX == x && player.y+player.moveY == y) { return false; }
+	if (playerAt(x,y)) { return false; }
 	if (npcAt(x,y) >= 0) { return false; }
 	return true;
 }
@@ -74,28 +74,33 @@ function inputPlayerMove (move) {
 
 function planPlayerMoves () {
 	player.moveX = 0; player.moveY = 0;
-	if (keyIsDown ('up') ) inputPlayerMove ({x:0,y:-1})
-	else if (keyIsDown ('down') ) inputPlayerMove ({x:0,y:1})
-	else if (keyIsDown ('left') ) inputPlayerMove ({x:-1,y:0})
-	else if (keyIsDown ('right') ) inputPlayerMove ({x:1,y:0})
+	if (keyIsDown ('up') ) inputPlayerMove ({x:0,y:-1});
+	else if (keyIsDown ('down') ) inputPlayerMove ({x:0,y:1});
+	else if (keyIsDown ('left') ) inputPlayerMove ({x:-1,y:0});
+	else if (keyIsDown ('right') ) inputPlayerMove ({x:1,y:0});
+	else if (keyIsDown ('w') ) player.moved = true;
 }
 
 function chasePlayer (c) {
 	var highestSmell = 0;
 	var move = {x:0,y:0};
-	if (tileWalkable(npcs[c].x,npcs[c].y+1) && highestSmell < smellMap[npcs[c].y+1][npcs[c].x]) {
+	if ((tileWalkable(npcs[c].x,npcs[c].y+1) || playerAt(npcs[c].x,npcs[c].y+1)) && 
+			highestSmell < smellMap[npcs[c].y+1][npcs[c].x]) {
 		highestSmell = smellMap[npcs[c].y+1][npcs[c].x];
 		move = {x:0,y:1};
 	}
-	if (tileWalkable(npcs[c].x,npcs[c].y-1) && highestSmell < smellMap[npcs[c].y-1][npcs[c].x]) {
+	if ((tileWalkable(npcs[c].x,npcs[c].y-1) || playerAt(npcs[c].x,npcs[c].y-1)) && 
+			highestSmell < smellMap[npcs[c].y-1][npcs[c].x]) {
 		highestSmell = smellMap[npcs[c].y-1][npcs[c].x];
 		move = {x:0,y:-1};
 	}
-	if (tileWalkable(npcs[c].x+1,npcs[c].y) && highestSmell < smellMap[npcs[c].y][npcs[c].x+1]) {
+	if ((tileWalkable(npcs[c].x+1,npcs[c].y) || playerAt(npcs[c].x+1,npcs[c].y)) && 
+			highestSmell < smellMap[npcs[c].y][npcs[c].x+1]) {
 		highestSmell = smellMap[npcs[c].y][npcs[c].x+1];
 		move = {x:1,y:0};
 	} 
-	if (tileWalkable(npcs[c].x-1,npcs[c].y) && highestSmell < smellMap[npcs[c].y][npcs[c].x-1]) {
+	if ((tileWalkable(npcs[c].x-1,npcs[c].y) || playerAt(npcs[c].x-1,npcs[c].y)) && 
+			highestSmell < smellMap[npcs[c].y][npcs[c].x-1]) {
 		highestSmell = smellMap[npcs[c].y][npcs[c].x-1];
 		move = {x:-1,y:0};
 	}
@@ -106,12 +111,13 @@ function planNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
 		var move = {x:0,y:0};
 		if (npcs[c].hostile && npcs[c].hp > 0 ) {
-			if ( manhattanDistance({x:player.x+player.moveX, y:player.y+player.moveY},npcs[c]) <= 1 ) {
-				// attack 
+			move = chasePlayer(c);
+			/*if ( manhattanDistance({x:player.x+player.moveX, y:player.y+player.moveY},npcs[c]) <= 1 ) {
+				move = {x:player.x+player.moveX-npcs[c].x,y:player.y+player.moveY-npcs[c].y};
 			}
-			else { move = chasePlayer(c); }
+			else { move = chasePlayer(c); }*/
 		}
-		if ( tileWalkable(npcs[c].x+move.x, npcs[c].y+move.y) ) {
+		if ( tileWalkable(npcs[c].x+move.x, npcs[c].y+move.y) || playerAt(npcs[c].x+move.x, npcs[c].y+move.y) ) {
 			npcs[c].moveX = move.x;
 			npcs[c].moveY = move.y;
 		}
@@ -123,6 +129,7 @@ function attackCharacter (c) {
 		npcs[c].hp -= 5;
 	} else if (c == "player") {
 		player.hp -= 5;
+		console.log(player.hp);
 	}
 }
 
