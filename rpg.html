@@ -70,6 +70,7 @@ function inputPlayerMove (move) {
 		player.moved = true;
 	} else if (npcAt(player.x+move.x, player.y+move.y) >= 0) {
 		player.attackX = player.x+move.x; player.attackY = player.y+move.y; 
+		player.damageDealt = attackCharacter (npcAt(player.attackX, player.attackY));
 		player.moved = true;
 	}
 }
@@ -110,6 +111,7 @@ function planNpcMoves () {
 			if ( manhattanDistance({x:player.x+player.moveX, y:player.y+player.moveY},npcs[c]) <= 1 ) {
 				npcs[c].attackX = player.x+player.moveX;
 				npcs[c].attackY = player.y+player.moveY;
+				npcs[c].damageDealt = attackCharacter ("player");
 			} else { 
 				var move = chasePlayer(c); 
 				npcs[c].moveX = move.x; npcs[c].moveY = move.y;
@@ -129,26 +131,18 @@ function attackCharacter (c) {
 }
 
 function executePlayerMove () {
-	var index = npcAt(player.attackX, player.attackY);
-	if ( index >= 0 ) {
-		attackCharacter (index);
-	} else {
-		player.x += player.moveX; player.y += player.moveY;
-	}
+	player.x += player.moveX; player.y += player.moveY;
 	player.moveX = 0; player.moveY = 0; 
 	player.attackX = -1; player.attackY = -1;
-	player.moved = false;
+	player.damageDealt = 0; player.moved = false;
 }
 
 function executeNpcMoves () {
 	for ( var c = 0; c < npcs.length; c++ ) {
-		if ( playerAt (npcs[c].attackX, npcs[c].attackY) ) {
-			attackCharacter ("player");
-		} else {
-			npcs[c].x += npcs[c].moveX; npcs[c].y += npcs[c].moveY;
-		}
+		npcs[c].x += npcs[c].moveX; npcs[c].y += npcs[c].moveY;
 		npcs[c].moveX = 0; npcs[c].moveY = 0;
 		npcs[c].attackX = -1; npcs[c].attackY = -1;
+		npcs[c].damageDealt = 0;
 	}
 }
 
@@ -182,6 +176,7 @@ function drawCharacter (character) {
 	fillCircle( character.x*gridSize+gridSize/2+character.moveX*framesElapsed,
 				character.y*gridSize+gridSize/2+character.moveY*framesElapsed,
 				gridSize/2, character.hp <= 0 ? 'red' : character.color);
+	writeText (character.damageDealt,character.attackX*gridSize+gridSize/4,character.attackY*gridSize-framesElapsed/2, "red");
 }
 
 function drawFogOfWar() {
