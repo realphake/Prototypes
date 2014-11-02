@@ -147,16 +147,16 @@ function executeNpcMoves () {
 }
 
 function updateSeenMap () {
-	for (var x = 0; x < worldMap[0].length; x ++ ) {
-		for (var y = 0; y < worldMap.length; y ++ ) {
+	for (var x = player.x-20; x < player.x+20; x ++ ) {
+		for (var y = player.y-15; y < player.y+15; y ++ ) {
 			if ( lineOfSight (player,{x:x,y:y}) ) { seenMap[y][x] = 1; }
 		}
 	}
 }
 
 function updateSmellMap () {
-	for (var x = 0; x < worldMap[0].length; x ++ ) {
-		for (var y = 0; y < worldMap.length; y ++ ) {
+	for (var x = player.x-20; x < player.x+20; x ++ ) {
+		for (var y = player.y-15; y < player.y+15; y ++ ) {
 			if ( lineOfEffect (player,{x:x,y:y}) ) { 
 				smellMap[y][x] = 20*turnNumber - manhattanDistance(player,{x:x,y:y}); 
 			}
@@ -181,8 +181,8 @@ function drawCharacter (character) {
 
 function drawFogOfWar() {
 	holdChanges();
-	for ( var y = 0; y < worldMap.length; y++) {
-		for ( var x = 0; x < worldMap[y].length; x++) {
+	for (var x = player.x-20; x < player.x+20; x ++ ) {
+		for (var y = player.y-15; y < player.y+15; y ++ ) {
 			if ( ! lineOfSight (player,{x:x,y:y}) ) { 
 				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black"); 
 			}
@@ -192,8 +192,8 @@ function drawFogOfWar() {
 }
 
 function drawTerrain () {
-	for ( var y = 0; y < worldMap.length; y++) {
-		for ( var x = 0; x < worldMap[y].length; x++) {
+	for (var x = player.x-20; x < player.x+20; x ++ ) {
+		for (var y = player.y-15; y < player.y+15; y ++ ) {
 			drawTile(x,y);
 		}
 	}
