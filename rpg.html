@@ -147,18 +147,18 @@ function executeNpcMoves () {
 }
 
 function updateSeenMap () {
-	for (var x = player.x-20; x < player.x+20; x ++ ) {
-		for (var y = player.y-15; y < player.y+15; y ++ ) {
+	for (var x = player.x-horDrawDist; x < player.x+horDrawDist; x ++ ) {
+		for (var y = player.y-verDrawDist; y < player.y+verDrawDist; y ++ ) {
 			if ( lineOfSight (player,{x:x,y:y}) ) { seenMap[y][x] = 1; }
 		}
 	}
 }
 
 function updateSmellMap () {
-	for (var x = player.x-20; x < player.x+20; x ++ ) {
-		for (var y = player.y-15; y < player.y+15; y ++ ) {
+	for (var x = player.x-horDrawDist; x < player.x+horDrawDist; x ++ ) {
+		for (var y = player.y-verDrawDist; y < player.y+verDrawDist; y ++ ) {
 			if ( lineOfEffect (player,{x:x,y:y}) ) { 
-				smellMap[y][x] = 20*turnNumber - manhattanDistance(player,{x:x,y:y}); 
+				smellMap[y][x] = horDrawDist*turnNumber - manhattanDistance(player,{x:x,y:y}); 
 			}
 		}
 	}
@@ -173,19 +173,20 @@ function formallyExecuteMoves () {
 }
 
 function drawCharacter (character) {
-	fillCircle( (character.x-player.x+20)*gridSize+gridSize/2+character.moveX*framesElapsed,
-				(character.y-player.y+15)*gridSize+gridSize/2+character.moveY*framesElapsed,
+	fillCircle( (character.x-player.x+horDrawDist)*gridSize+gridSize/2+character.moveX*framesElapsed-player.moveX*framesElapsed,
+				(character.y-player.y+verDrawDist)*gridSize+gridSize/2+character.moveY*framesElapsed-player.moveY*framesElapsed,
 				gridSize/2, character.hp <= 0 ? 'red' : character.color);
-	writeText(character.damageDealt,(character.attackX-player.x+20)*gridSize+gridSize/4,
-									(character.attackY-player.y+15)*gridSize-framesElapsed/2, "red");
+	writeText(character.damageDealt,(character.attackX-player.x+horDrawDist)*gridSize+gridSize/4-player.moveX*framesElapsed,
+									(character.attackY-player.y+verDrawDist)*gridSize-framesElapsed/2-player.moveY*framesElapsed, "red");
 }
 
 function drawFogOfWar() {
 	holdChanges();
-	for (var x = player.x-20; x < player.x+20; x ++ ) {
-		for (var y = player.y-15; y < player.y+15; y ++ ) {
+	for (var x = player.x-horDrawDist; x < player.x+horDrawDist; x ++ ) {
+		for (var y = player.y-verDrawDist; y < player.y+verDrawDist; y ++ ) {
 			if ( ! lineOfSight (player,{x:x,y:y}) ) { 
-				fillBox ((x-player.x+20)*gridSize,(y-player.y+15)*gridSize,gridSize,gridSize,"black"); 
+				fillBox((x-player.x+horDrawDist)*gridSize-player.moveX*framesElapsed,
+						(y-player.y+verDrawDist)*gridSize-player.moveY*framesElapsed,gridSize,gridSize,"black"); 
 			}
 		}
 	}
@@ -193,8 +194,8 @@ function drawFogOfWar() {
 }
 
 function drawTerrain () {
-	for (var x = player.x-20; x < player.x+20; x ++ ) {
-		for (var y = player.y-15; y < player.y+15; y ++ ) {
+	for (var x = player.x-horDrawDist; x < player.x+horDrawDist; x ++ ) {
+		for (var y = player.y-verDrawDist; y < player.y+verDrawDist; y ++ ) {
 			drawTile(x,y);
 		}
 	}
@@ -211,12 +212,16 @@ function tileSpriteByType ( tileType ) {
 
 function drawTile(x,y) {
 	if ( seenMap[y][x] == 0 )  {
-		fillBox ((x-player.x+20)*gridSize,(y-player.y+15)*gridSize,gridSize,gridSize,"black");
+		fillBox((x-player.x+horDrawDist)*gridSize-player.moveX*framesElapsed,
+				(y-player.y+verDrawDist)*gridSize-player.moveY*framesElapsed,gridSize,gridSize,"black");
 	} else if ( worldMap[y][x] == TREE ) {
-		drawImage(tileSpriteByType(GRASS), (x-player.x+20)*gridSize,(y-player.y+15)*gridSize, 16,16, 0,0, 16,16);
-		drawImage(tileSpriteByType(TREE), (x-player.x+20)*gridSize,(y-player.y+15)*gridSize, 16,16, 0,0, 16,16);
+		drawImage( tileSpriteByType(GRASS), (x-player.x+horDrawDist)*gridSize-player.moveX*framesElapsed,
+											(y-player.y+verDrawDist)*gridSize-player.moveY*framesElapsed, 16,16, 0,0, 16,16);
+		drawImage ( tileSpriteByType(TREE), (x-player.x+horDrawDist)*gridSize-player.moveX*framesElapsed,
+											(y-player.y+verDrawDist)*gridSize-player.moveY*framesElapsed, 16,16, 0,0, 16,16);
 	} else {
-		drawImage(tileSpriteByType(worldMap[y][x]), (x-player.x+20)*gridSize,(y-player.y+15)*gridSize, 16,16, 0,0, 16,16);
+		drawImage(tileSpriteByType(worldMap[y][x]), (x-player.x+horDrawDist)*gridSize-player.moveX*framesElapsed,
+													(y-player.y+verDrawDist)*gridSize-player.moveY*framesElapsed, 16,16, 0,0, 16,16);
 	}
 }
 
@@ -274,8 +279,10 @@ function setup () {
 	programState = 0;
 	turnNumber = 0;
 	gridSize = 16;
+	horDrawDist = (640/16)/2;
+	verDrawDist = (480/16)/2;
 	framesElapsed = 0;
-	gameSpeed = 3;
+	gameSpeed = 5;
 	seenMap = twoDimensionalZeroes(worldMap.length, worldMap[0].length);
 	smellMap = twoDimensionalZeroes(worldMap.length, worldMap[0].length);
 	sprites.water = startLoading ("rpgtiles/water.png");
