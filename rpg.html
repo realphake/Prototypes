@@ -173,10 +173,11 @@ function formallyExecuteMoves () {
 }
 
 function drawCharacter (character) {
-	fillCircle( character.x*gridSize+gridSize/2+character.moveX*framesElapsed,
-				character.y*gridSize+gridSize/2+character.moveY*framesElapsed,
+	fillCircle( (character.x-player.x+20)*gridSize+gridSize/2+character.moveX*framesElapsed,
+				(character.y-player.y+15)*gridSize+gridSize/2+character.moveY*framesElapsed,
 				gridSize/2, character.hp <= 0 ? 'red' : character.color);
-	writeText (character.damageDealt,character.attackX*gridSize+gridSize/4,character.attackY*gridSize-framesElapsed/2, "red");
+	writeText(character.damageDealt,(character.attackX-player.x+20)*gridSize+gridSize/4,
+									(character.attackY-player.y+15)*gridSize-framesElapsed/2, "red");
 }
 
 function drawFogOfWar() {
@@ -184,7 +185,7 @@ function drawFogOfWar() {
 	for (var x = player.x-20; x < player.x+20; x ++ ) {
 		for (var y = player.y-15; y < player.y+15; y ++ ) {
 			if ( ! lineOfSight (player,{x:x,y:y}) ) { 
-				fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black"); 
+				fillBox ((x-player.x+20)*gridSize,(y-player.y+15)*gridSize,gridSize,gridSize,"black"); 
 			}
 		}
 	}
@@ -210,12 +211,12 @@ function tileSpriteByType ( tileType ) {
 
 function drawTile(x,y) {
 	if ( seenMap[y][x] == 0 )  {
-		fillBox (x*gridSize,y*gridSize,gridSize,gridSize,"black");
+		fillBox ((x-player.x+20)*gridSize,(y-player.y+15)*gridSize,gridSize,gridSize,"black");
 	} else if ( worldMap[y][x] == TREE ) {
-		drawImage(tileSpriteByType(GRASS), x*gridSize,y*gridSize, 16,16, 0,0, 16,16);
-		drawImage(tileSpriteByType(TREE), x*gridSize,y*gridSize, 16,16, 0,0, 16,16);
+		drawImage(tileSpriteByType(GRASS), (x-player.x+20)*gridSize,(y-player.y+15)*gridSize, 16,16, 0,0, 16,16);
+		drawImage(tileSpriteByType(TREE), (x-player.x+20)*gridSize,(y-player.y+15)*gridSize, 16,16, 0,0, 16,16);
 	} else {
-		drawImage(tileSpriteByType(worldMap[y][x]), x*gridSize,y*gridSize, 16,16, 0,0, 16,16);
+		drawImage(tileSpriteByType(worldMap[y][x]), (x-player.x+20)*gridSize,(y-player.y+15)*gridSize, 16,16, 0,0, 16,16);
 	}
 }
 

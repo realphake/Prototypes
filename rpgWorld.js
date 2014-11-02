@@ -1,5 +1,5 @@
 
-var player = {hp:21,x:21,y:16,moveX:0,moveY:0,attackX:-1,attackY:-1,damageDealt:0,moved:false,color:"black"};
+var player = {hp:21,x:178,y:184,moveX:0,moveY:0,attackX:-1,attackY:-1,damageDealt:0,moved:false,color:"black"};
 var npcs = [{hp:10,x:10,y:2,moveX:0,moveY:0,attackX:-1,attackY:-1,damageDealt:0,hostile:false,color:"white"},
 		{hp:10,x:1,y:15,moveX:0,moveY:0,attackX:-1,attackY:-1,damageDealt:0,hostile:false,color:"white"},
 		{hp:10,x:20,y:20,moveX:0,moveY:0,attackX:-1,attackY:-1,damageDealt:0,hostile:true,color:"white"},
